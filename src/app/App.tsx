@@ -47,6 +47,7 @@ import { OfflineIndicator } from '@/app/components/OfflineIndicator';
 import { useIsMobile } from '@/app/components/ui/use-mobile';
 import { AlertProvider } from '@/app/contexts/AlertContext';
 import { GlobalDataProvider, useGlobalData } from '@/app/contexts/GlobalDataContext';
+import { ModelRegistryProvider } from '@/app/contexts/ModelRegistryContext';
 import { SettingsProvider, useSettings } from '@/app/contexts/SettingsContext';
 import { MENUS, MODULES } from '@/app/data/navigation';
 import { useTranslation } from '@/app/i18n/mock';
@@ -489,9 +490,11 @@ export default function App() {
     <ErrorBoundary>
       <SettingsProvider>
         <AlertProvider>
-          <GlobalDataProvider>
-            <AppContent />
-          </GlobalDataProvider>
+          <ModelRegistryProvider>
+            <GlobalDataProvider>
+              <AppContent />
+            </GlobalDataProvider>
+          </ModelRegistryProvider>
         </AlertProvider>
       </SettingsProvider>
     </ErrorBoundary>
