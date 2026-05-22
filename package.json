@@ -15,7 +15,7 @@
     "url": "https://github.com/YanYuCloudCube/YYC3-QATS/issues"
   },
   "scripts": {
-    "dev": "vite --port 3200",
+    "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 500",
