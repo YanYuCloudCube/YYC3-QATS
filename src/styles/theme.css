@@ -1,0 +1,365 @@
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-size: 16px;
+  --background: #ffffff;
+  --foreground: oklch(0.145 0 0);
+  --card: #ffffff;
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: #030213;
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.95 0.0058 264.53);
+  --secondary-foreground: #030213;
+  --muted: #ececf0;
+  --muted-foreground: #717182;
+  --accent: #e9ebef;
+  --accent-foreground: #030213;
+  --destructive: #d4183d;
+  --destructive-foreground: #ffffff;
+  --border: rgba(0, 0, 0, 0.1);
+  --input: transparent;
+  --input-background: #f3f3f5;
+  --switch-background: #cbced4;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: #030213;
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.145 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: oklch(0.269 0 0);
+  --input: oklch(0.269 0 0);
+  --ring: oklch(0.439 0 0);
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-ring: oklch(0.439 0 0);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    background-color: #071425;
+    color: #CCD6F6;
+  }
+
+  /**
+  * Default typography styles for HTML elements (h1-h4, p, label, button, input).
+  * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
+  */
+
+  html {
+    font-size: var(--font-size);
+  }
+
+  h1 {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h2 {
+    font-size: var(--text-xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h3 {
+    font-size: var(--text-lg);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h4 {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  label {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  button {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  input {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-normal);
+    line-height: 1.5;
+  }
+}
+
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #233554;
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #38B2AC;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ═══════════════════════════════════════════════
+   YYC-QATS Theme System (Phase 16A)
+   Light theme overrides for the trading platform
+   ═══════════════════════════════════════════════ */
+
+.yyc-light body,
+.yyc-light .min-h-screen {
+  background-color: #F0F4F8 !important;
+  color: #1A202C !important;
+}
+
+/* Primary backgrounds */
+.yyc-light .bg-\[\#071425\] { background-color: #F0F4F8 !important; }
+.yyc-light .bg-\[\#0A192F\] { background-color: #FFFFFF !important; }
+.yyc-light .bg-\[\#112240\] { background-color: #EDF2F7 !important; }
+.yyc-light .bg-\[\#1A2B47\] { background-color: #E2E8F0 !important; }
+
+/* Backdrop / overlay bg with opacity */
+.yyc-light .bg-\[\#112240\]\/80 { background-color: rgba(237, 242, 247, 0.9) !important; }
+
+/* Text colors */
+.yyc-light .text-\[\#CCD6F6\] { color: #2D3748 !important; }
+.yyc-light .text-\[\#8892B0\] { color: #718096 !important; }
+.yyc-light .text-\[\#FFFFFF\] { color: #1A202C !important; }
+.yyc-light .text-white { color: #1A202C !important; }
+
+/* Borders */
+.yyc-light .border-\[\#233554\] { border-color: #CBD5E0 !important; }
+.yyc-light .border-\[\#233554\]\/30 { border-color: rgba(203, 213, 224, 0.5) !important; }
+.yyc-light .border-\[\#233554\]\/50 { border-color: rgba(203, 213, 224, 0.7) !important; }
+
+/* Card-like panels */
+.yyc-light .bg-\[\#0A192F\]\/95 { background-color: rgba(255, 255, 255, 0.97) !important; }
+
+/* Accent buttons should keep white text */
+.yyc-light .bg-\[\#4299E1\] { background-color: #3182CE !important; }
+.yyc-light .bg-\[\#4299E1\] .text-white,
+.yyc-light .bg-\[\#4299E1\].text-white,
+.yyc-light button.bg-\[\#4299E1\] { color: #FFFFFF !important; }
+.yyc-light .bg-\[\#38B2AC\] { background-color: #319795 !important; }
+.yyc-light button.bg-\[\#38B2AC\] { color: #FFFFFF !important; }
+
+/* Scrollbar */
+.yyc-light .custom-scrollbar::-webkit-scrollbar-thumb { background: #CBD5E0; }
+.yyc-light .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #319795; }
+
+/* Charts / Canvas areas — keep dark for readability */
+.yyc-light canvas { /* preserve dark chart bg via inline styles */ }
+
+/* ═══════════════════════════════════════════════
+   Phase 17C: Fine-grained light theme for all modules
+   ═══════════════════════════════════════════════ */
+
+/* Secondary background tones */
+.yyc-light .bg-\\[\\#0D1B2A\\] { background-color: #FAFBFC !important; }
+.yyc-light .bg-\\[\\#0A1929\\] { background-color: #FFFFFF !important; }
+
+/* Card borders and hover states */
+.yyc-light .hover\\:border-\\[\\#38B2AC\\]\\/50:hover { border-color: rgba(49, 151, 149, 0.5) !important; }
+.yyc-light .hover\\:bg-\\[\\#1A2B47\\]:hover { background-color: #E2E8F0 !important; }
+.yyc-light .hover\\:bg-\\[\\#112240\\]:hover { background-color: #EDF2F7 !important; }
+
+/* Text secondary tones */
+.yyc-light .text-\\[\\#233554\\] { color: #CBD5E0 !important; }
+.yyc-light .text-\\[\\#4A5568\\] { color: #A0AEC0 !important; }
+
+/* Semi-transparent backgrounds */
+.yyc-light .bg-\\[\\#071425\\]\\/80 { background-color: rgba(240, 244, 248, 0.9) !important; }
+.yyc-light .bg-\\[\\#0A192F\\]\\/80 { background-color: rgba(255, 255, 255, 0.9) !important; }
+
+/* Opacity-based accent backgrounds */
+.yyc-light .bg-\\[\\#38B2AC\\]\\/10 { background-color: rgba(49, 151, 149, 0.08) !important; }
+.yyc-light .bg-\\[\\#38B2AC\\]\\/20 { background-color: rgba(49, 151, 149, 0.15) !important; }
+.yyc-light .bg-\\[\\#4299E1\\]\\/10 { background-color: rgba(49, 130, 206, 0.08) !important; }
+.yyc-light .bg-\\[\\#4299E1\\]\\/20 { background-color: rgba(49, 130, 206, 0.15) !important; }
+.yyc-light .bg-\\[\\#F56565\\]\\/10 { background-color: rgba(229, 62, 62, 0.08) !important; }
+.yyc-light .bg-\\[\\#ECC94B\\]\\/10 { background-color: rgba(214, 158, 46, 0.08) !important; }
+.yyc-light .bg-\\[\\#9F7AEA\\]\\/10 { background-color: rgba(128, 90, 213, 0.08) !important; }
+
+/* Module-specific: Sidebar active item */
+.yyc-light .bg-\\[\\#38B2AC\\]\\/5 { background-color: rgba(49, 151, 149, 0.06) !important; }
+
+/* Input & form controls */
+.yyc-light input.bg-\\[\\#071425\\],
+.yyc-light textarea.bg-\\[\\#071425\\],
+.yyc-light select.bg-\\[\\#071425\\] {
+  background-color: #F7FAFC !important;
+  color: #2D3748 !important;
+  border-color: #CBD5E0 !important;
+}
+.yyc-light input.bg-\\[\\#112240\\],
+.yyc-light textarea.bg-\\[\\#112240\\] {
+  background-color: #EDF2F7 !important;
+  color: #2D3748 !important;
+}
+
+/* Placeholder text */
+.yyc-light input::placeholder,
+.yyc-light textarea::placeholder {
+  color: #A0AEC0 !important;
+}
+
+/* Code editor blocks — keep dark */
+.yyc-light pre.text-\\[\\#CCD6F6\\] { color: #2D3748 !important; }
+
+/* Toast override */
+.yyc-light [data-sonner-toast] {
+  background-color: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+  color: #2D3748 !important;
+}
+
+/* Badge / chip variants in light */
+.yyc-light .bg-purple-500\\/20 { background-color: rgba(128, 90, 213, 0.12) !important; }
+.yyc-light .bg-green-500\\/20 { background-color: rgba(72, 187, 120, 0.12) !important; }
+.yyc-light .bg-blue-500\\/20 { background-color: rgba(66, 153, 225, 0.12) !important; }
+.yyc-light .bg-gray-500\\/20 { background-color: rgba(160, 174, 192, 0.12) !important; }
+
+/* Shadow enhancement for cards in light mode */
+.yyc-light .shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15) !important; }
+.yyc-light .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08) !important; }
+
+/* Slider / range inputs */
+.yyc-light input[type=\"range\"] {
+  background: #CBD5E0 !important;
+}
+
+/* Modal backdrop */
+.yyc-light .fixed.inset-0.z-50 .absolute.inset-0 {
+  background-color: rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Ticker bar */
+.yyc-light .animate-\\[ticker_30s_linear_infinite\\] {
+  color: #2D3748 !important;
+}
+
+/* Strategy code editor — keep dark */
+.yyc-light .bg-\\[\\#071425\\] pre,
+.yyc-light .bg-\\[\\#071425\\] code {
+  color: #CCD6F6 !important;
+}
+
+/* Transition for smooth theme switching */
+html.yyc-light body,
+html.yyc-dark body {
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* All backgrounds and text transition */
+.yyc-light *,
+.yyc-dark * {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
