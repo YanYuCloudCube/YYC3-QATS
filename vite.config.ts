@@ -26,6 +26,17 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'vendor-react': ['react', 'react-dom'],
+          'vendor-mui': ['@mui/material', '@mui/icons-material'],
+          'vendor-chart': ['recharts'],
+          'vendor-three': ['three'],
+        },
+      },
+    },
   },
   plugins: [
     // The React and Tailwind plugins are both required for Make, even if
