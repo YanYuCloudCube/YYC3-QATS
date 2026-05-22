@@ -15,7 +15,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 
-import { serviceBridge } from '@/app/api/service-bridge';
 import { Card } from '@/app/components/ui/card';
 import { useIsMobile } from '@/app/components/ui/use-mobile';
 import { useGlobalData } from '@/app/contexts/GlobalDataContext';

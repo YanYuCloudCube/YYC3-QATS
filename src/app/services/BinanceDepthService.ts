@@ -160,6 +160,7 @@ class ExchangeDepthConnection {
 
   // Health metrics
   private messageCount = 0;
+  // @ts-expect-error reserved for health metrics
   private connectionStartTime = 0;
 
   constructor(config: ExchangeDepthConfig) {
@@ -438,7 +439,7 @@ export class BinanceDepthService {
         // Map to backward-compatible status
         const mapped = status === 'connected' ? 'connected' as const
           : status === 'simulated' ? 'simulated' as const
-          : 'connecting' as const;
+            : 'connecting' as const;
         this.onStatusChange?.(mapped);
       },
     );

@@ -12,7 +12,7 @@
  * @depends react,@/app/components/ui,@/app/contexts
  */
 
-import React, { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 
 import { Card } from '@/app/components/ui/card';
 import { useGlobalData } from '@/app/contexts/GlobalDataContext';

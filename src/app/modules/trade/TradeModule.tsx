@@ -12,29 +12,37 @@
  * @depends react,recharts,@/app/components,@/app/contexts,@/app/services
  */
 
-import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Area, AreaChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { toast } from 'sonner';
 
 import { serviceBridge } from '@/app/api/service-bridge';
 import { notificationStore } from '@/app/components/NotificationCenter';
 import { Card } from '@/app/components/ui/card';
-import { useGlobalData } from '@/app/contexts/GlobalDataContext';
 import type { PositionFillEvent } from '@/app/contexts/GlobalDataContext';
-import { getDepthService, destroyDepthService } from '@/app/services/BinanceDepthService';
-import type { OrderBookSnapshot, DepthLevel } from '@/app/services/BinanceDepthService';
+import { useGlobalData } from '@/app/contexts/GlobalDataContext';
+import type { DepthLevel, OrderBookSnapshot } from '@/app/services/BinanceDepthService';
+import { destroyDepthService, getDepthService } from '@/app/services/BinanceDepthService';
 import {
-  getAggregatedQuote, getExchangeStatuses, getLiquidationEngine,
-  getArbitrageSignals, recordArbitrageSignal, executeArbitrage,
-  getMultiAccountSummary, getHedgeEngine, routeOrder,
-  type AggregatedQuote, type LiquidationRule, type LiquidationEvent,
-  type ArbitrageSignal, type HedgeRule, type HedgeExecution,
+  executeArbitrage,
+  getAggregatedQuote,
+  getArbitrageSignals,
+  getExchangeStatuses,
+  getHedgeEngine,
+  getLiquidationEngine,
+  getMultiAccountSummary,
+  type AggregatedQuote,
+  type ArbitrageSignal,
+  type HedgeExecution,
+  type HedgeRule,
+  type LiquidationEvent,
+  type LiquidationRule,
   type MultiAccountSummary,
 } from '@/app/services/ExchangeAggregator';
+import type { StrategySignalInput } from '@/app/services/signal-chain-engine';
 import {
   signalChainEngine,
   type ChainEvent,
-  type TradeRecommendation,
 } from '@/app/services/signal-chain-engine';
 
 type IconProps = React.SVGProps<SVGSVGElement>;
@@ -100,7 +108,7 @@ function generateRecentTrades(midPrice: number): { time: string; price: number; 
 // Real Trading Module (Main)
 // ══════════════════════════════════════════════════════
 const RealTradeModule = ({ activeTertiary }: { activeTertiary: string }) => {
-  const { positions, account, formatPrice, formatUSD, formatPercent, getAsset, navigateTo, emitRiskSignal, riskMetrics, applyFill, closePosition, appendTradeRecord } = useGlobalData();
+  const { positions, account, formatPrice, formatUSD, formatPercent, getAsset, navigateTo, emitRiskSignal, applyFill, closePosition, appendTradeRecord } = useGlobalData();
 
   // ── Basic state ──
   const [orderType, setOrderType] = useState<BasicOrderType>('limit');
@@ -167,8 +175,8 @@ const RealTradeModule = ({ activeTertiary }: { activeTertiary: string }) => {
           quantity: o.quantity,
           filled: o.filledQuantity || 0,
           status: o.status === 'FILLED' ? 'filled' as const :
-                  o.status === 'PARTIALLY_FILLED' ? 'partial' as const :
-                  o.status === 'CANCELLED' ? 'cancelled' as const : 'pending' as const,
+            o.status === 'PARTIALLY_FILLED' ? 'partial' as const :
+              o.status === 'CANCELLED' ? 'cancelled' as const : 'pending' as const,
           total: o.price * o.quantity,
         }));
         setOrders(prev => [...bridgeOrders, ...prev].slice(0, 100));
@@ -287,7 +295,7 @@ const RealTradeModule = ({ activeTertiary }: { activeTertiary: string }) => {
           // Full close
           closePosition(matchingPos.symbol, matchingPos.side);
           // ── Bridge: sync auto-close on fill to backend ──
-          serviceBridge.trade.closePosition(matchingPos.symbol, matchingPos.side).catch(() => {});
+          serviceBridge.trade.closePosition(matchingPos.symbol, matchingPos.side).catch(() => { });
           toast.success(`持仓已平仓: ${matchingPos.symbol} ${matchingPos.side}`, {
             description: `数量: ${matchingPos.quantity} @ $${order.price.toLocaleString()}`,
           });
@@ -296,7 +304,7 @@ const RealTradeModule = ({ activeTertiary }: { activeTertiary: string }) => {
           // Use applyFill logic: reduce from existing position
           closePosition(matchingPos.symbol, matchingPos.side);
           // ── Bridge: sync partial close on fill to backend ──
-          serviceBridge.trade.closePosition(matchingPos.symbol, matchingPos.side).catch(() => {});
+          serviceBridge.trade.closePosition(matchingPos.symbol, matchingPos.side).catch(() => { });
           // Re-open with reduced quantity
           const remainQty = matchingPos.quantity - order.quantity;
           if (remainQty > 0.000001) {
@@ -545,7 +553,7 @@ const RealTradeModule = ({ activeTertiary }: { activeTertiary: string }) => {
                       <div className="h-full bg-[#4299E1]/60 rounded transition-all" style={{ width: `${pct}%` }} />
                     </div>
                   </div>
-                  <span className="w-24 text-right text-xs font-mono text-[#CCD6F6]">${val.toLocaleString(undefined, {maximumFractionDigits: 2})}</span>
+                  <span className="w-24 text-right text-xs font-mono text-[#CCD6F6]">${val.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                   <span className="w-10 text-right text-[10px] text-[#8892B0]">{pct.toFixed(1)}%</span>
                 </div>
               );
@@ -557,7 +565,7 @@ const RealTradeModule = ({ activeTertiary }: { activeTertiary: string }) => {
                   <div className="h-full bg-[#38B2AC]/40 rounded transition-all" style={{ width: `${(account.availableBalance / account.totalAssets) * 100}%` }} />
                 </div>
               </div>
-              <span className="w-24 text-right text-xs font-mono text-[#CCD6F6]">${account.availableBalance.toLocaleString(undefined, {maximumFractionDigits: 2})}</span>
+              <span className="w-24 text-right text-xs font-mono text-[#CCD6F6]">${account.availableBalance.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
               <span className="w-10 text-right text-[10px] text-[#8892B0]">{((account.availableBalance / account.totalAssets) * 100).toFixed(1)}%</span>
             </div>
           </div>
@@ -581,8 +589,8 @@ const RealTradeModule = ({ activeTertiary }: { activeTertiary: string }) => {
     };
     const filtered = orderTab === '全部' ? orders :
       orderTab === '活跃' ? orders.filter(o => o.status === 'pending' || o.status === 'partial') :
-      orderTab === '已成交' ? orders.filter(o => o.status === 'filled') :
-      orders.filter(o => o.status === 'cancelled' || o.status === 'rejected');
+        orderTab === '已成交' ? orders.filter(o => o.status === 'filled') :
+          orders.filter(o => o.status === 'cancelled' || o.status === 'rejected');
 
     return (
       <Card className="p-4">
@@ -932,35 +940,34 @@ const RealTradeModule = ({ activeTertiary }: { activeTertiary: string }) => {
                 {orders
                   .filter(o => orderTab === '全部' || (orderTab === '活跃' && (o.status === 'pending' || o.status === 'partial')) || (orderTab === '已成交' && o.status === 'filled') || (orderTab === '已取消' && (o.status === 'cancelled' || o.status === 'rejected')))
                   .map(o => (
-                  <tr key={o.id} className="border-b border-[#233554]/30 hover:bg-[#112240]">
-                    <td className="py-1.5 px-2 text-[#8892B0] font-mono">{o.id}{o.ocoGroupId && <span className="ml-1 text-[9px] text-[#ECC94B]">OCO</span>}</td>
-                    <td className="py-1.5 px-2 text-[#8892B0]">{new Date(o.time).toLocaleTimeString()}</td>
-                    <td className="py-1.5 px-2 text-[#CCD6F6]">{o.symbol}</td>
-                    <td className="py-1.5 px-2"><span className={`px-1.5 py-0.5 rounded text-[9px] ${o.side === 'BUY' ? 'bg-[#38B2AC]/20 text-[#38B2AC]' : 'bg-[#F56565]/20 text-[#F56565]'}`}>{o.side}</span></td>
-                    <td className="py-1.5 px-2 text-[#8892B0] text-[10px]">
-                      {o.advancedType === 'trailing_stop' ? `追踪 ${o.trailingDelta}%` : o.advancedType === 'stop_limit' ? '止损' : o.advancedType === 'take_profit' ? '止盈' : o.type === 'limit' ? '限价' : '市价'}
-                    </td>
-                    <td className="py-1.5 px-2 text-right font-mono text-[#CCD6F6]">{o.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
-                    <td className="py-1.5 px-2 text-right font-mono text-[#CCD6F6]">{o.quantity}</td>
-                    <td className="py-1.5 px-2 text-right font-mono text-[#CCD6F6]">{o.filled.toFixed(6)}</td>
-                    <td className="py-1.5 px-2">
-                      <span className={`text-[9px] px-1.5 py-0.5 rounded ${
-                        o.status === 'filled' ? 'bg-[#38B2AC]/20 text-[#38B2AC]' :
-                        o.status === 'partial' ? 'bg-[#ECC94B]/20 text-[#ECC94B]' :
-                        o.status === 'pending' ? 'bg-[#4299E1]/20 text-[#4299E1]' :
-                        'bg-[#8892B0]/20 text-[#8892B0]'
-                      }`}>{o.status === 'filled' ? '已成交' : o.status === 'partial' ? '部分成交' : o.status === 'pending' ? '待成交' : '已取消'}</span>
-                      {o.status === 'partial' && <div className="w-full h-1 bg-[#071425] rounded mt-1"><div className="h-full bg-[#ECC94B] rounded" style={{ width: `${(o.filled / o.quantity) * 100}%` }} /></div>}
-                      {o.advancedType === 'trailing_stop' && o.status === 'pending' && <div className="text-[8px] text-[#8892B0] mt-0.5">HWM: ${o.trailingHighPrice?.toLocaleString()}</div>}
-                    </td>
-                    <td className="py-1.5 px-2 text-[10px] text-[#8892B0]">{o.exchange || '-'}</td>
-                    <td className="py-1.5 px-2 text-right">
-                      {(o.status === 'pending' || o.status === 'partial') && (
-                        <button onClick={() => handleCancelOrder(o.id)} className="text-[9px] px-2 py-0.5 bg-[#F56565]/10 text-[#F56565] rounded hover:bg-[#F56565]/20">撤单</button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                    <tr key={o.id} className="border-b border-[#233554]/30 hover:bg-[#112240]">
+                      <td className="py-1.5 px-2 text-[#8892B0] font-mono">{o.id}{o.ocoGroupId && <span className="ml-1 text-[9px] text-[#ECC94B]">OCO</span>}</td>
+                      <td className="py-1.5 px-2 text-[#8892B0]">{new Date(o.time).toLocaleTimeString()}</td>
+                      <td className="py-1.5 px-2 text-[#CCD6F6]">{o.symbol}</td>
+                      <td className="py-1.5 px-2"><span className={`px-1.5 py-0.5 rounded text-[9px] ${o.side === 'BUY' ? 'bg-[#38B2AC]/20 text-[#38B2AC]' : 'bg-[#F56565]/20 text-[#F56565]'}`}>{o.side}</span></td>
+                      <td className="py-1.5 px-2 text-[#8892B0] text-[10px]">
+                        {o.advancedType === 'trailing_stop' ? `追踪 ${o.trailingDelta}%` : o.advancedType === 'stop_limit' ? '止损' : o.advancedType === 'take_profit' ? '止盈' : o.type === 'limit' ? '限价' : '市价'}
+                      </td>
+                      <td className="py-1.5 px-2 text-right font-mono text-[#CCD6F6]">{o.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}</td>
+                      <td className="py-1.5 px-2 text-right font-mono text-[#CCD6F6]">{o.quantity}</td>
+                      <td className="py-1.5 px-2 text-right font-mono text-[#CCD6F6]">{o.filled.toFixed(6)}</td>
+                      <td className="py-1.5 px-2">
+                        <span className={`text-[9px] px-1.5 py-0.5 rounded ${o.status === 'filled' ? 'bg-[#38B2AC]/20 text-[#38B2AC]' :
+                          o.status === 'partial' ? 'bg-[#ECC94B]/20 text-[#ECC94B]' :
+                            o.status === 'pending' ? 'bg-[#4299E1]/20 text-[#4299E1]' :
+                              'bg-[#8892B0]/20 text-[#8892B0]'
+                          }`}>{o.status === 'filled' ? '已成交' : o.status === 'partial' ? '部分成交' : o.status === 'pending' ? '待成交' : '已取消'}</span>
+                        {o.status === 'partial' && <div className="w-full h-1 bg-[#071425] rounded mt-1"><div className="h-full bg-[#ECC94B] rounded" style={{ width: `${(o.filled / o.quantity) * 100}%` }} /></div>}
+                        {o.advancedType === 'trailing_stop' && o.status === 'pending' && <div className="text-[8px] text-[#8892B0] mt-0.5">HWM: ${o.trailingHighPrice?.toLocaleString()}</div>}
+                      </td>
+                      <td className="py-1.5 px-2 text-[10px] text-[#8892B0]">{o.exchange || '-'}</td>
+                      <td className="py-1.5 px-2 text-right">
+                        {(o.status === 'pending' || o.status === 'partial') && (
+                          <button onClick={() => handleCancelOrder(o.id)} className="text-[9px] px-2 py-0.5 bg-[#F56565]/10 text-[#F56565] rounded hover:bg-[#F56565]/20">撤单</button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
           </div>
@@ -1625,129 +1632,129 @@ const ConfigModule = () => {
 
       {/* ── Exchanges Tab (original config content) ── */}
       {configTab === 'exchanges' && (<div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Multi-Exchange Configuration */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Multi-Exchange Configuration */}
+          <Card className="p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-white text-sm">多交易所接口 (Phase 2)</h3>
+              <span className="text-[9px] px-2 py-0.5 bg-[#38B2AC]/20 text-[#38B2AC] rounded">聚合路由</span>
+            </div>
+            <div className="space-y-3">
+              {exchangeStatuses.map((ex, i) => (
+                <div key={i} className="flex items-center justify-between p-3 bg-[#0A192F] rounded border border-[#233554]/50">
+                  <div className="flex items-center gap-3">
+                    <div className={`w-2 h-2 rounded-full ${ex.status === 'online' ? 'bg-[#38B2AC]' : ex.status === 'degraded' ? 'bg-[#ECC94B]' : 'bg-[#F56565]'}`} />
+                    <span className="text-[#CCD6F6] text-xs">{ex.name}</span>
+                    <span className="text-[9px] text-[#8892B0]">{ex.pairs} pairs</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-[10px] text-[#8892B0]">{ex.latency}ms</span>
+                    <span className="text-[10px] text-[#8892B0]">Fee: {ex.fee}</span>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded ${ex.status === 'online' ? 'bg-[#38B2AC]/20 text-[#38B2AC]' : ex.status === 'degraded' ? 'bg-[#ECC94B]/20 text-[#ECC94B]' : 'bg-[#F56565]/20 text-[#F56565]'}`}>{ex.status}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-3 p-2 bg-[#071425] rounded text-[10px] text-[#8892B0]">
+              <p>智能路由: 自动选择最优价格的交易所执行下单。支持跨交易所套利检测。</p>
+            </div>
+          </Card>
+
+          {/* Risk Control Parameters */}
+          <Card className="p-4">
+            <h3 className="text-white text-sm mb-4">风控参数</h3>
+            <div className="space-y-3">
+              {[
+                { name: '单笔最大亏损', value: '2%' },
+                { name: '日内最大亏损', value: '5%' },
+                { name: '最大持仓比例', value: '80%' },
+                { name: '最大杠杆倍数', value: '10x' },
+                { name: '滑点保护', value: '0.5%' },
+                { name: 'VaR日度限额', value: '$15,000' },
+              ].map((param, i) => (
+                <div key={i} className="flex items-center justify-between p-2 bg-[#0A192F] rounded">
+                  <span className="text-[#8892B0] text-xs">{param.name}</span>
+                  <input className="w-24 bg-[#071425] border border-[#233554] rounded px-2 py-1 text-xs text-right font-mono text-[#CCD6F6] focus:outline-none focus:border-[#4299E1]" defaultValue={param.value} />
+                </div>
+              ))}
+            </div>
+          </Card>
+        </div>
+
+        {/* Auto-Liquidation Rules */}
         <Card className="p-4">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-white text-sm">多交易所接口 (Phase 2)</h3>
-            <span className="text-[9px] px-2 py-0.5 bg-[#38B2AC]/20 text-[#38B2AC] rounded">聚合路由</span>
+            <div className="flex items-center gap-3">
+              <Shield className="w-4 h-4 text-[#F56565]" />
+              <h3 className="text-white text-sm">风控联动自动平仓引擎</h3>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] text-[#8892B0]">触发次数: {liqEvents.length}</span>
+              <button onClick={() => setAutoLiqEnabled(!autoLiqEnabled)} className={`px-3 py-1 text-xs rounded ${autoLiqEnabled ? 'bg-[#F56565] text-white' : 'bg-[#112240] text-[#8892B0] border border-[#233554]'}`}>
+                {autoLiqEnabled ? '引擎运行中' : '已停止'}
+              </button>
+            </div>
           </div>
-          <div className="space-y-3">
-            {exchangeStatuses.map((ex, i) => (
-              <div key={i} className="flex items-center justify-between p-3 bg-[#0A192F] rounded border border-[#233554]/50">
-                <div className="flex items-center gap-3">
-                  <div className={`w-2 h-2 rounded-full ${ex.status === 'online' ? 'bg-[#38B2AC]' : ex.status === 'degraded' ? 'bg-[#ECC94B]' : 'bg-[#F56565]'}`} />
-                  <span className="text-[#CCD6F6] text-xs">{ex.name}</span>
-                  <span className="text-[9px] text-[#8892B0]">{ex.pairs} pairs</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-[10px] text-[#8892B0]">{ex.latency}ms</span>
-                  <span className="text-[10px] text-[#8892B0]">Fee: {ex.fee}</span>
-                  <span className={`text-[10px] px-1.5 py-0.5 rounded ${ex.status === 'online' ? 'bg-[#38B2AC]/20 text-[#38B2AC]' : ex.status === 'degraded' ? 'bg-[#ECC94B]/20 text-[#ECC94B]' : 'bg-[#F56565]/20 text-[#F56565]'}`}>{ex.status}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="mt-3 p-2 bg-[#071425] rounded text-[10px] text-[#8892B0]">
-            <p>智能路由: 自动选择最优价格的交易所执行下单。支持跨交易所套利检测。</p>
-          </div>
-        </Card>
 
-        {/* Risk Control Parameters */}
-        <Card className="p-4">
-          <h3 className="text-white text-sm mb-4">风控参数</h3>
-          <div className="space-y-3">
-            {[
-              { name: '单笔最大亏损', value: '2%' },
-              { name: '日内最大亏损', value: '5%' },
-              { name: '最大持仓比例', value: '80%' },
-              { name: '最大杠杆倍数', value: '10x' },
-              { name: '滑点保护', value: '0.5%' },
-              { name: 'VaR日度限额', value: '$15,000' },
-            ].map((param, i) => (
-              <div key={i} className="flex items-center justify-between p-2 bg-[#0A192F] rounded">
-                <span className="text-[#8892B0] text-xs">{param.name}</span>
-                <input className="w-24 bg-[#071425] border border-[#233554] rounded px-2 py-1 text-xs text-right font-mono text-[#CCD6F6] focus:outline-none focus:border-[#4299E1]" defaultValue={param.value} />
-              </div>
-            ))}
-          </div>
-        </Card>
-      </div>
-
-      {/* Auto-Liquidation Rules */}
-      <Card className="p-4">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <Shield className="w-4 h-4 text-[#F56565]" />
-            <h3 className="text-white text-sm">风控联动自动平仓引擎</h3>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-[10px] text-[#8892B0]">触发次数: {liqEvents.length}</span>
-            <button onClick={() => setAutoLiqEnabled(!autoLiqEnabled)} className={`px-3 py-1 text-xs rounded ${autoLiqEnabled ? 'bg-[#F56565] text-white' : 'bg-[#112240] text-[#8892B0] border border-[#233554]'}`}>
-              {autoLiqEnabled ? '引擎运行中' : '已停止'}
-            </button>
-          </div>
-        </div>
-
-        <div className="overflow-auto">
-          <table className="w-full text-xs">
-            <thead className="text-[#8892B0] uppercase border-b border-[#233554]">
-              <tr>
-                <th className="py-2 px-3 text-left">规则名称</th>
-                <th className="py-2 px-3 text-left">触发类型</th>
-                <th className="py-2 px-3 text-right">阈值</th>
-                <th className="py-2 px-3 text-left">动作</th>
-                <th className="py-2 px-3 text-right">冷却</th>
-                <th className="py-2 px-3 text-right">触发次数</th>
-                <th className="py-2 px-3 text-center">启用</th>
-              </tr>
-            </thead>
-            <tbody>
-              {liqRules.map(rule => (
-                <tr key={rule.id} className="border-b border-[#233554]/30 hover:bg-[#112240]">
-                  <td className="py-2 px-3 text-[#CCD6F6]">{rule.name}</td>
-                  <td className="py-2 px-3 text-[#8892B0]">{triggerTypeLabel[rule.triggerType] || rule.triggerType}</td>
-                  <td className="py-2 px-3 text-right font-mono text-[#ECC94B]">{rule.threshold}{rule.triggerType === 'max_loss_pct' || rule.triggerType === 'drawdown' || rule.triggerType === 'var_breach' || rule.triggerType === 'margin_call' ? '%' : rule.triggerType === 'max_loss_usd' ? ' USD' : ''}</td>
-                  <td className="py-2 px-3"><span className="text-[10px] px-1.5 py-0.5 bg-[#F56565]/10 text-[#F56565] rounded">{actionLabel[rule.action] || rule.action}</span></td>
-                  <td className="py-2 px-3 text-right text-[#8892B0] font-mono">{(rule.cooldownMs / 1000).toFixed(0)}s</td>
-                  <td className="py-2 px-3 text-right font-mono text-[#CCD6F6]">{rule.triggerCount}</td>
-                  <td className="py-2 px-3 text-center">
-                    <button onClick={() => handleToggleRule(rule.id)} className={`w-8 h-4 rounded-full relative transition-colors ${rule.enabled ? 'bg-[#38B2AC]' : 'bg-[#233554]'}`}>
-                      <div className={`w-3 h-3 rounded-full bg-white absolute top-0.5 transition-transform ${rule.enabled ? 'translate-x-4' : 'translate-x-0.5'}`} />
-                    </button>
-                  </td>
+          <div className="overflow-auto">
+            <table className="w-full text-xs">
+              <thead className="text-[#8892B0] uppercase border-b border-[#233554]">
+                <tr>
+                  <th className="py-2 px-3 text-left">规则名称</th>
+                  <th className="py-2 px-3 text-left">触发类型</th>
+                  <th className="py-2 px-3 text-right">阈值</th>
+                  <th className="py-2 px-3 text-left">动作</th>
+                  <th className="py-2 px-3 text-right">冷却</th>
+                  <th className="py-2 px-3 text-right">触发次数</th>
+                  <th className="py-2 px-3 text-center">启用</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Card>
-
-      {/* Liquidation Event History */}
-      {liqEvents.length > 0 && (
-        <Card className="p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-white text-sm">平仓事件记录</h3>
-            <button onClick={() => { liqEngine.clearEvents(); setLiqEvents([]); }} className="text-[10px] text-[#8892B0] hover:text-[#CCD6F6]">清除记录</button>
-          </div>
-          <div className="space-y-2 max-h-[200px] overflow-auto">
-            {liqEvents.map(ev => (
-              <div key={ev.id} className="p-2 bg-[#0A192F] rounded border-l-2 border-[#F56565]">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-[#F56565]">{ev.ruleName}</span>
-                  <span className="text-[9px] text-[#8892B0]">{new Date(ev.timestamp).toLocaleTimeString()}</span>
-                </div>
-                <p className="text-[10px] text-[#CCD6F6] mt-1">{ev.reason}</p>
-                <div className="flex items-center gap-3 mt-1 text-[9px]">
-                  <span className="text-[#8892B0]">品种: {ev.symbols.join(', ')}</span>
-                  <span className="text-[#ECC94B]">动作: {actionLabel[ev.action]}</span>
-                  <span className="text-[#F56565]">金额: ${ev.totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
-                </div>
-              </div>
-            ))}
+              </thead>
+              <tbody>
+                {liqRules.map(rule => (
+                  <tr key={rule.id} className="border-b border-[#233554]/30 hover:bg-[#112240]">
+                    <td className="py-2 px-3 text-[#CCD6F6]">{rule.name}</td>
+                    <td className="py-2 px-3 text-[#8892B0]">{triggerTypeLabel[rule.triggerType] || rule.triggerType}</td>
+                    <td className="py-2 px-3 text-right font-mono text-[#ECC94B]">{rule.threshold}{rule.triggerType === 'max_loss_pct' || rule.triggerType === 'drawdown' || rule.triggerType === 'var_breach' || rule.triggerType === 'margin_call' ? '%' : rule.triggerType === 'max_loss_usd' ? ' USD' : ''}</td>
+                    <td className="py-2 px-3"><span className="text-[10px] px-1.5 py-0.5 bg-[#F56565]/10 text-[#F56565] rounded">{actionLabel[rule.action] || rule.action}</span></td>
+                    <td className="py-2 px-3 text-right text-[#8892B0] font-mono">{(rule.cooldownMs / 1000).toFixed(0)}s</td>
+                    <td className="py-2 px-3 text-right font-mono text-[#CCD6F6]">{rule.triggerCount}</td>
+                    <td className="py-2 px-3 text-center">
+                      <button onClick={() => handleToggleRule(rule.id)} className={`w-8 h-4 rounded-full relative transition-colors ${rule.enabled ? 'bg-[#38B2AC]' : 'bg-[#233554]'}`}>
+                        <div className={`w-3 h-3 rounded-full bg-white absolute top-0.5 transition-transform ${rule.enabled ? 'translate-x-4' : 'translate-x-0.5'}`} />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </Card>
-      )}
+
+        {/* Liquidation Event History */}
+        {liqEvents.length > 0 && (
+          <Card className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-white text-sm">平仓事件记录</h3>
+              <button onClick={() => { liqEngine.clearEvents(); setLiqEvents([]); }} className="text-[10px] text-[#8892B0] hover:text-[#CCD6F6]">清除记录</button>
+            </div>
+            <div className="space-y-2 max-h-[200px] overflow-auto">
+              {liqEvents.map(ev => (
+                <div key={ev.id} className="p-2 bg-[#0A192F] rounded border-l-2 border-[#F56565]">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-[#F56565]">{ev.ruleName}</span>
+                    <span className="text-[9px] text-[#8892B0]">{new Date(ev.timestamp).toLocaleTimeString()}</span>
+                  </div>
+                  <p className="text-[10px] text-[#CCD6F6] mt-1">{ev.reason}</p>
+                  <div className="flex items-center gap-3 mt-1 text-[9px]">
+                    <span className="text-[#8892B0]">品种: {ev.symbols.join(', ')}</span>
+                    <span className="text-[#ECC94B]">动作: {actionLabel[ev.action]}</span>
+                    <span className="text-[#F56565]">金额: ${ev.totalValue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        )}
       </div>)}
     </div>
   );
@@ -1758,7 +1765,7 @@ const ConfigModule = () => {
 // ══════════════════════════════════════════════════════
 
 const SignalTradePanel = () => {
-  const { positions, account, emitRiskSignal } = useGlobalData();
+  const { positions: _positions, account: _account, emitRiskSignal: _emitRiskSignal } = useGlobalData();
   const [chainEvents, setChainEvents] = useState<ChainEvent[]>([]);
   const [stats, setStats] = useState(signalChainEngine.getChainStats());
   const [isPaused, setIsPaused] = useState(signalChainEngine.paused);

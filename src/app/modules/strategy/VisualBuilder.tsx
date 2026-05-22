@@ -19,11 +19,10 @@
  * No forwardRef, no radix-ui, no reactflow — pure React + SVG.
  */
 
-import React, { useState, useCallback, useRef, useMemo } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
 import { Card } from '@/app/components/ui/card';
-import { getThemeColors } from '@/app/constants/theme-colors';
 
 // ═══════════════════════════════════════
 // §1  Type Definitions
@@ -68,73 +67,101 @@ interface NodeTemplate {
 
 const NODE_TEMPLATES: NodeTemplate[] = [
   // Data Sources
-  { type: 'price_feed', category: 'data', label: '价格数据', icon: '📊', description: '实时/历史 OHLCV', params: [
-    { key: 'symbol', label: '品种', type: 'select', default: 'BTC/USDT', options: ['BTC/USDT', 'ETH/USDT', 'SOL/USDT', 'BNB/USDT', 'XRP/USDT'] },
-    { key: 'interval', label: '周期', type: 'select', default: '1h', options: ['1m', '5m', '15m', '1h', '4h', '1d'] },
-  ], inputs: [], outputs: ['ohlcv'] },
+  {
+    type: 'price_feed', category: 'data', label: '价格数据', icon: '📊', description: '实时/历史 OHLCV', params: [
+      { key: 'symbol', label: '品种', type: 'select', default: 'BTC/USDT', options: ['BTC/USDT', 'ETH/USDT', 'SOL/USDT', 'BNB/USDT', 'XRP/USDT'] },
+      { key: 'interval', label: '周期', type: 'select', default: '1h', options: ['1m', '5m', '15m', '1h', '4h', '1d'] },
+    ], inputs: [], outputs: ['ohlcv']
+  },
 
-  { type: 'volume_feed', category: 'data', label: '量能数据', icon: '📈', description: '成交量与资金流', params: [
-    { key: 'smoothing', label: '平滑周期', type: 'number', default: 5, min: 1, max: 50 },
-  ], inputs: [], outputs: ['volume'] },
+  {
+    type: 'volume_feed', category: 'data', label: '量能数据', icon: '📈', description: '成交量与资金流', params: [
+      { key: 'smoothing', label: '平滑周期', type: 'number', default: 5, min: 1, max: 50 },
+    ], inputs: [], outputs: ['volume']
+  },
 
   // Indicators
-  { type: 'sma', category: 'indicator', label: 'SMA 均线', icon: '〰️', description: '简单移动平均', params: [
-    { key: 'period', label: '周期', type: 'number', default: 20, min: 2, max: 200 },
-  ], inputs: ['price'], outputs: ['value'] },
+  {
+    type: 'sma', category: 'indicator', label: 'SMA 均线', icon: '〰️', description: '简单移动平均', params: [
+      { key: 'period', label: '周期', type: 'number', default: 20, min: 2, max: 200 },
+    ], inputs: ['price'], outputs: ['value']
+  },
 
-  { type: 'ema', category: 'indicator', label: 'EMA 均线', icon: '📐', description: '指数移动平均', params: [
-    { key: 'period', label: '周期', type: 'number', default: 12, min: 2, max: 200 },
-  ], inputs: ['price'], outputs: ['value'] },
+  {
+    type: 'ema', category: 'indicator', label: 'EMA 均线', icon: '📐', description: '指数移动平均', params: [
+      { key: 'period', label: '周期', type: 'number', default: 12, min: 2, max: 200 },
+    ], inputs: ['price'], outputs: ['value']
+  },
 
-  { type: 'rsi', category: 'indicator', label: 'RSI', icon: '🔄', description: '相对强弱指标', params: [
-    { key: 'period', label: '周期', type: 'number', default: 14, min: 2, max: 100 },
-  ], inputs: ['price'], outputs: ['value'] },
+  {
+    type: 'rsi', category: 'indicator', label: 'RSI', icon: '🔄', description: '相对强弱指标', params: [
+      { key: 'period', label: '周期', type: 'number', default: 14, min: 2, max: 100 },
+    ], inputs: ['price'], outputs: ['value']
+  },
 
-  { type: 'macd', category: 'indicator', label: 'MACD', icon: '📉', description: '指数平滑异同', params: [
-    { key: 'fast', label: '快线', type: 'number', default: 12, min: 2, max: 50 },
-    { key: 'slow', label: '慢线', type: 'number', default: 26, min: 10, max: 100 },
-    { key: 'signal', label: '信号线', type: 'number', default: 9, min: 2, max: 30 },
-  ], inputs: ['price'], outputs: ['macd', 'signal', 'histogram'] },
+  {
+    type: 'macd', category: 'indicator', label: 'MACD', icon: '📉', description: '指数平滑异同', params: [
+      { key: 'fast', label: '快线', type: 'number', default: 12, min: 2, max: 50 },
+      { key: 'slow', label: '慢线', type: 'number', default: 26, min: 10, max: 100 },
+      { key: 'signal', label: '信号线', type: 'number', default: 9, min: 2, max: 30 },
+    ], inputs: ['price'], outputs: ['macd', 'signal', 'histogram']
+  },
 
-  { type: 'bollinger', category: 'indicator', label: 'BOLL', icon: '🔔', description: '布林带', params: [
-    { key: 'period', label: '周期', type: 'number', default: 20, min: 5, max: 100 },
-    { key: 'stdDev', label: '标准差', type: 'number', default: 2, min: 0.5, max: 4, step: 0.5 },
-  ], inputs: ['price'], outputs: ['upper', 'middle', 'lower'] },
+  {
+    type: 'bollinger', category: 'indicator', label: 'BOLL', icon: '🔔', description: '布林带', params: [
+      { key: 'period', label: '周期', type: 'number', default: 20, min: 5, max: 100 },
+      { key: 'stdDev', label: '标准差', type: 'number', default: 2, min: 0.5, max: 4, step: 0.5 },
+    ], inputs: ['price'], outputs: ['upper', 'middle', 'lower']
+  },
 
-  { type: 'atr', category: 'indicator', label: 'ATR', icon: '📏', description: '真实波动幅度', params: [
-    { key: 'period', label: '周期', type: 'number', default: 14, min: 2, max: 100 },
-  ], inputs: ['ohlcv'], outputs: ['value'] },
+  {
+    type: 'atr', category: 'indicator', label: 'ATR', icon: '📏', description: '真实波动幅度', params: [
+      { key: 'period', label: '周期', type: 'number', default: 14, min: 2, max: 100 },
+    ], inputs: ['ohlcv'], outputs: ['value']
+  },
 
   // Conditions
   { type: 'cross_above', category: 'condition', label: '上穿', icon: '⬆️', description: '值A上穿值B', params: [], inputs: ['a', 'b'], outputs: ['signal'] },
   { type: 'cross_below', category: 'condition', label: '下穿', icon: '⬇️', description: '值A下穿值B', params: [], inputs: ['a', 'b'], outputs: ['signal'] },
-  { type: 'threshold', category: 'condition', label: '阈值判断', icon: '🎯', description: '大于/小于阈值', params: [
-    { key: 'operator', label: '条件', type: 'select', default: '>', options: ['>', '<', '>=', '<='] },
-    { key: 'value', label: '阈值', type: 'number', default: 70, min: 0, max: 10000 },
-  ], inputs: ['value'], outputs: ['signal'] },
+  {
+    type: 'threshold', category: 'condition', label: '阈值判断', icon: '🎯', description: '大于/小于阈值', params: [
+      { key: 'operator', label: '条件', type: 'select', default: '>', options: ['>', '<', '>=', '<='] },
+      { key: 'value', label: '阈值', type: 'number', default: 70, min: 0, max: 10000 },
+    ], inputs: ['value'], outputs: ['signal']
+  },
   { type: 'and_gate', category: 'condition', label: 'AND 门', icon: '🔗', description: '所有信号同时满足', params: [], inputs: ['a', 'b'], outputs: ['signal'] },
   { type: 'or_gate', category: 'condition', label: 'OR 门', icon: '🔀', description: '任一信号满足', params: [], inputs: ['a', 'b'], outputs: ['signal'] },
 
   // Actions
-  { type: 'buy', category: 'action', label: '买入', icon: '🟢', description: '开多/买入信号', params: [
-    { key: 'positionSize', label: '仓位比例', type: 'number', default: 0.2, min: 0.01, max: 1, step: 0.05 },
-    { key: 'orderType', label: '订单类型', type: 'select', default: 'market', options: ['market', 'limit'] },
-  ], inputs: ['trigger'], outputs: [] },
-  { type: 'sell', category: 'action', label: '卖出', icon: '🔴', description: '平仓/卖出信号', params: [
-    { key: 'positionSize', label: '仓位比例', type: 'number', default: 1.0, min: 0.01, max: 1, step: 0.05 },
-    { key: 'orderType', label: '订单类型', type: 'select', default: 'market', options: ['market', 'limit'] },
-  ], inputs: ['trigger'], outputs: [] },
+  {
+    type: 'buy', category: 'action', label: '买入', icon: '🟢', description: '开多/买入信号', params: [
+      { key: 'positionSize', label: '仓位比例', type: 'number', default: 0.2, min: 0.01, max: 1, step: 0.05 },
+      { key: 'orderType', label: '订单类型', type: 'select', default: 'market', options: ['market', 'limit'] },
+    ], inputs: ['trigger'], outputs: []
+  },
+  {
+    type: 'sell', category: 'action', label: '卖出', icon: '🔴', description: '平仓/卖出信号', params: [
+      { key: 'positionSize', label: '仓位比例', type: 'number', default: 1.0, min: 0.01, max: 1, step: 0.05 },
+      { key: 'orderType', label: '订单类型', type: 'select', default: 'market', options: ['market', 'limit'] },
+    ], inputs: ['trigger'], outputs: []
+  },
 
   // Risk Management
-  { type: 'stop_loss', category: 'risk', label: '止损', icon: '🛡️', description: '固定止损', params: [
-    { key: 'percent', label: '止损%', type: 'number', default: 2, min: 0.1, max: 50, step: 0.5 },
-  ], inputs: ['position'], outputs: ['trigger'] },
-  { type: 'take_profit', category: 'risk', label: '止盈', icon: '🏆', description: '固定止盈', params: [
-    { key: 'percent', label: '止盈%', type: 'number', default: 5, min: 0.1, max: 100, step: 0.5 },
-  ], inputs: ['position'], outputs: ['trigger'] },
-  { type: 'trailing_stop', category: 'risk', label: '追踪止损', icon: '📍', description: '跟随最高价止损', params: [
-    { key: 'percent', label: '回撤%', type: 'number', default: 3, min: 0.1, max: 50, step: 0.5 },
-  ], inputs: ['position'], outputs: ['trigger'] },
+  {
+    type: 'stop_loss', category: 'risk', label: '止损', icon: '🛡️', description: '固定止损', params: [
+      { key: 'percent', label: '止损%', type: 'number', default: 2, min: 0.1, max: 50, step: 0.5 },
+    ], inputs: ['position'], outputs: ['trigger']
+  },
+  {
+    type: 'take_profit', category: 'risk', label: '止盈', icon: '🏆', description: '固定止盈', params: [
+      { key: 'percent', label: '止盈%', type: 'number', default: 5, min: 0.1, max: 100, step: 0.5 },
+    ], inputs: ['position'], outputs: ['trigger']
+  },
+  {
+    type: 'trailing_stop', category: 'risk', label: '追踪止损', icon: '📍', description: '跟随最高价止损', params: [
+      { key: 'percent', label: '回撤%', type: 'number', default: 3, min: 0.1, max: 50, step: 0.5 },
+    ], inputs: ['position'], outputs: ['trigger']
+  },
 ];
 
 const CATEGORY_COLORS: Record<NodeCategory, string> = {
@@ -463,7 +490,7 @@ export const VisualBuilder = () => {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [showCode, setShowCode] = useState(false);
   const [activeCategory, setActiveCategory] = useState<NodeCategory>('data');
-  const [viewOffset, setViewOffset] = useState({ x: 0, y: 0 });
+  const [viewOffset, _setViewOffset] = useState({ x: 0, y: 0 });
   const svgRef = useRef<SVGSVGElement>(null);
 
   const selectedNode = nodes.find(n => n.id === selectedNodeId);
@@ -564,9 +591,9 @@ export const VisualBuilder = () => {
         });
       }
 
-      if (bestMatch && bestMatch.isOutput !== pendingConnection.isOutput) {
-        const from = pendingConnection.isOutput ? pendingConnection : bestMatch;
-        const to = pendingConnection.isOutput ? bestMatch : pendingConnection;
+      if (bestMatch && (bestMatch as { isOutput: boolean }).isOutput !== pendingConnection.isOutput) {
+        const from = pendingConnection.isOutput ? pendingConnection : bestMatch as typeof pendingConnection;
+        const to = pendingConnection.isOutput ? bestMatch as typeof pendingConnection : pendingConnection;
 
         // Check for duplicate
         const exists = connections.some(c => c.fromNodeId === from.nodeId && c.fromPort === from.port && c.toNodeId === to.nodeId && c.toPort === to.port);
@@ -688,11 +715,10 @@ export const VisualBuilder = () => {
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
-                  className={`px-2 py-0.5 rounded text-[9px] transition-colors ${
-                    activeCategory === cat
-                      ? `text-white`
-                      : 'text-[#8892B0] hover:text-[#CCD6F6]'
-                  }`}
+                  className={`px-2 py-0.5 rounded text-[9px] transition-colors ${activeCategory === cat
+                    ? `text-white`
+                    : 'text-[#8892B0] hover:text-[#CCD6F6]'
+                    }`}
                   style={activeCategory === cat ? { backgroundColor: `${CATEGORY_COLORS[cat]}30`, color: CATEGORY_COLORS[cat] } : {}}
                 >
                   {CATEGORY_LABELS[cat]}

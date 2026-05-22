@@ -30,7 +30,7 @@ type MotionComponent<T extends keyof React.JSX.IntrinsicElements> =
   (props: MotionStripProps & React.JSX.IntrinsicElements[T]) => React.JSX.Element;
 
 function makeMotion<T extends keyof React.JSX.IntrinsicElements>(Tag: T): MotionComponent<T> {
-  const MotionComponent = ({ _animate, _initial, _exit, _transition, _layoutId, _whileHover, _whileTap, ...props }: MotionStripProps & React.JSX.IntrinsicElements[T]) => {
+  const MotionComponent = ({ animate: _animate, initial: _initial, exit: _exit, transition: _transition, layoutId: _layoutId, whileHover: _whileHover, whileTap: _whileTap, ...props }: MotionStripProps & React.JSX.IntrinsicElements[T]) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return React.createElement(Tag, props as any);
   };

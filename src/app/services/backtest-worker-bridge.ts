@@ -33,23 +33,24 @@ import {
   computeBacktest,
   type WorkerBacktestConfig,
   type WorkerBacktestResult,
-  type WorkerMessage,
-  type WorkerResponse,
 } from './backtest-worker-logic';
 import type { BacktestConfig, BacktestResult } from './BacktestEngine';
-import { getKLineService, type KLineInterval } from './BinanceKLineService';
+import { getKLineService } from './BinanceKLineService';
 
 // ── Worker Pool ──
 
+// @ts-expect-error reserved for worker pool implementation
 let workerInstance: Worker | null = null;
 let workerSupported: boolean | null = null;
+// @ts-expect-error reserved for worker pool implementation
 let pendingRequests = new Map<string, {
   resolve: (v: WorkerBacktestResult) => void;
   reject: (e: Error) => void;
 }>();
+// @ts-expect-error reserved for worker pool implementation
 let requestId = 0;
 
-/** Create inline worker from blob (avoids separate file + Vite bundling issues) */
+// @ts-expect-error reserved for worker pool implementation
 function createWorkerBlob(): Worker | null {
   try {
     // The worker script executes computeBacktest from the inlined logic

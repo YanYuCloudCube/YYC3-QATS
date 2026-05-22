@@ -27,60 +27,59 @@
 
 // ─── Imports for API tests ───
 import { authManager, decodeMockJWT, isTokenExpired, type ModulePermission } from '../api/auth';
-import { runCanaryValidation, quickDegradationTest, type CanaryReport, type CanaryResult } from '../api/canary-validator';
-import { CircuitBreaker, getCircuitBreaker, getAllCircuitBreakerMetrics, resetAllCircuitBreakers, restoreCircuitBreakerStates } from '../api/circuit-breaker';
-import { HttpError, YYCWebSocket, getWebSocket } from '../api/client';
-import { apiConfig, currentEnv, allEnvConfigs, SERVER_NODES } from '../api/config';
+import { quickDegradationTest, runCanaryValidation, type CanaryReport, type CanaryResult } from '../api/canary-validator';
+import { CircuitBreaker, getAllCircuitBreakerMetrics, getCircuitBreaker, resetAllCircuitBreakers, restoreCircuitBreakerStates } from '../api/circuit-breaker';
+import { getWebSocket, HttpError, YYCWebSocket } from '../api/client';
+import { allEnvConfigs, apiConfig, currentEnv, SERVER_NODES } from '../api/config';
 import { MockApiService } from '../api/interfaces';
 import { perfMonitor } from '../api/performance-monitor';
-import { retryWithBackoff, getRetryPolicy, requestCache, persistCBStates, restoreCBStates, clearPersistedCBStates, type PersistedCBState } from '../api/retry-cache';
+import { clearPersistedCBStates, getRetryPolicy, persistCBStates, requestCache, restoreCBStates, retryWithBackoff, type PersistedCBState } from '../api/retry-cache';
 import { serviceBridge } from '../api/service-bridge';
-import type { UseYYCWebSocketOptions, WSTickerUpdate, WSDepthUpdate } from '../api/useYYCWebSocket';
-import type { WSKLineUpdate, WSTradeUpdate, UseMarketStreamOptions } from '../api/useYYCWebSocket';
+import type { UseMarketStreamOptions, UseYYCWebSocketOptions, WSDepthUpdate, WSKLineUpdate, WSTickerUpdate, WSTradeUpdate } from '../api/useYYCWebSocket';
 import { wsChannelManager } from '../api/ws-channels';
-import { yycApi, runConnectionTests, quickHealthCheck } from '../api/yyc-api';
+import { quickHealthCheck, runConnectionTests, yycApi } from '../api/yyc-api';
 import type { CandleDataPoint, OverlayType } from '../components/D3CandlestickChart';
 import {
-  WIDGET_TYPE_LABELS,
   WIDGET_COMPONENTS,
+  WIDGET_TYPE_LABELS,
 } from '../components/DashboardWidgets';
 import { ErrorBoundary, ModuleErrorBoundary, WidgetErrorBoundary, type ErrorCategory, type FallbackMode } from '../components/ErrorBoundary';
 import {
   notificationStore,
-  type NotificationType,
   type NotificationSeverity,
+  type NotificationType,
 } from '../components/NotificationCenter';
-import { ModuleSkeleton, WidgetSkeleton, SkeletonBar, SkeletonCard } from '../components/SkeletonLoader';
+import { ModuleSkeleton, SkeletonBar, SkeletonCard, WidgetSkeleton } from '../components/SkeletonLoader';
 import type { ThemeMode } from '../contexts/SettingsContext';
 import { SUPPORTED_LOCALES } from '../i18n/mock';
-import { runBacktestOffThread, getWorkerStatus } from '../services/backtest-worker-bridge';
+import { getWorkerStatus, runBacktestOffThread } from '../services/backtest-worker-bridge';
 import { computeBacktest, type WorkerBacktestConfig, type WorkerMessage, type WorkerResponse } from '../services/backtest-worker-logic';
 import {
-  signalChainEngine,
   createSignalChainEngine,
-  type SignalAction,
-  type RiskDecision,
-  type ExecutionStatus,
-  type StrategySignalInput,
+  signalChainEngine,
   type ChainEvent,
+  type ExecutionStatus,
+  type RiskDecision,
+  type SignalAction,
+  type StrategySignalInput,
 } from '../services/signal-chain-engine';
-import { exportData, exportMarketData, exportPositions, exportTrades, exportStrategies, type ExportFormat } from '../utils/data-export';
+import { exportData, exportMarketData, exportPositions, exportStrategies, exportTrades, type ExportFormat } from '../utils/data-export';
 import { globalErrorHandler } from '../utils/global-error-handler';
 import { offlineManager } from '../utils/offline-manager';
 import {
-  formatNumber,
-  formatCurrency,
-  formatPercent,
-  shallowEqual,
-  deepFreeze,
-  renderProfiler,
-  measureRender,
   arrayDiff,
+  deepFreeze,
+  formatCurrency,
+  formatNumber,
+  formatPercent,
+  measureRender,
+  renderProfiler,
+  shallowEqual,
 } from '../utils/perf-helpers';
-import { memoize, debounce, throttle, computeVirtualScroll, createBatchUpdater } from '../utils/performance';
+import { computeVirtualScroll, createBatchUpdater, debounce, memoize, throttle } from '../utils/performance';
 import {
-  preferenceManager,
   DEFAULT_PREFERENCES,
+  preferenceManager,
 } from '../utils/user-preferences';
 // Phase 15 imports
 // Phase 16 imports
@@ -1112,7 +1111,8 @@ const apiTests: TestCase[] = [
       let _called = false;
       const unsub = ws.onMessage(() => { _called = true; });
       assert(typeof unsub === 'function', 'onMessage should return unsubscribe function');
-      const unsubStatus = ws.onStatus(() => {});
+      void _called;
+      const unsubStatus = ws.onStatus(() => { });
       assert(typeof unsubStatus === 'function', 'onStatus should return unsubscribe function');
       unsub();
       unsubStatus();
@@ -2881,7 +2881,7 @@ const phase7Tests: TestCase[] = [
         steps: [],
         expected: '',
         automatable: true,
-        run: () => new Promise(() => {}), // Never resolves
+        run: () => new Promise(() => { }), // Never resolves
       };
       const result = await runCase(hangingTC, 200);
       assert(!result.passed, 'Hanging test should fail');
@@ -2995,7 +2995,7 @@ const phase7Tests: TestCase[] = [
       const ws = new YYCWebSocket('ws://test-p7-handlers');
       const unsubs: Array<() => void> = [];
       for (let i = 0; i < 3; i++) {
-        const unsub = ws.onMessage(() => {});
+        const unsub = ws.onMessage(() => { });
         assert(typeof unsub === 'function', `Handler ${i} should return unsubscribe function`);
         unsubs.push(unsub);
       }
@@ -4856,7 +4856,7 @@ const phase11Tests: TestCase[] = [
       // Force to OPEN by failing once
       await cb.execute(async () => { throw new Error('force'); }, async () => 'fb');
       assert(cb.state === 'OPEN', `Expected OPEN, got ${cb.state}`);
-      
+
       const result = await serviceBridge._withCB(
         'test_p11_open', 'openMethod',
         async () => { throw new Error('should not reach'); },
@@ -5525,7 +5525,7 @@ const phase12Tests: TestCase[] = [
     run: () => {
       const start = performance.now();
       const beforeSubs = wsChannelManager.stats.activeSubscriptions;
-      const unsub = wsChannelManager.subscribe('ticker:TEST/USDT', () => {});
+      const unsub = wsChannelManager.subscribe('ticker:TEST/USDT', () => { });
       const afterSubs = wsChannelManager.stats.activeSubscriptions;
       assert(afterSubs === beforeSubs + 1, `Expected ${beforeSubs + 1}, got ${afterSubs}`);
       unsub();
@@ -5542,9 +5542,9 @@ const phase12Tests: TestCase[] = [
     automatable: true,
     run: () => {
       const start = performance.now();
-      wsChannelManager.subscribe('ticker:A', () => {});
-      wsChannelManager.subscribe('depth:B', () => {});
-      wsChannelManager.subscribe('kline:C', () => {});
+      wsChannelManager.subscribe('ticker:A', () => { });
+      wsChannelManager.subscribe('depth:B', () => { });
+      wsChannelManager.subscribe('kline:C', () => { });
       assert(wsChannelManager.stats.activeSubscriptions >= 3, 'Should have >= 3 subs');
       wsChannelManager.unsubscribeAll();
       assert(wsChannelManager.stats.activeSubscriptions === 0, `Expected 0, got ${wsChannelManager.stats.activeSubscriptions}`);
@@ -5562,6 +5562,7 @@ const phase12Tests: TestCase[] = [
       let _called = false;
       const unsub = wsChannelManager.onStatusChange(() => { _called = true; });
       assert(typeof unsub === 'function', 'onStatusChange should return unsubscribe fn');
+      void _called;
       unsub();
       return { id: 'TC-P12-018', passed: true, duration: performance.now() - start, details: 'listener registered/removed' };
     },
@@ -5590,8 +5591,8 @@ const phase12Tests: TestCase[] = [
     run: () => {
       const start = performance.now();
       wsChannelManager.unsubscribeAll();
-      const unsub1 = wsChannelManager.subscribe('ticker:BTC/USDT', () => {});
-      const unsub2 = wsChannelManager.subscribe('depth:ETH/USDT', () => {});
+      const unsub1 = wsChannelManager.subscribe('ticker:BTC/USDT', () => { });
+      const unsub2 = wsChannelManager.subscribe('depth:ETH/USDT', () => { });
       const list = wsChannelManager.stats.channelList;
       assert(list.includes('ticker:BTC/USDT'), 'Should contain ticker:BTC/USDT');
       assert(list.includes('depth:ETH/USDT'), 'Should contain depth:ETH/USDT');
@@ -5900,7 +5901,7 @@ const phase13Tests: TestCase[] = [
     automatable: true,
     run: () => {
       const start = performance.now();
-      const updater = createBatchUpdater<number>(() => {}, 1000);
+      const updater = createBatchUpdater<number>(() => { }, 1000);
       updater.add(1); updater.add(2);
       updater.destroy();
       assert(updater.size() === 0, 'Queue should be empty after destroy');
@@ -5983,6 +5984,7 @@ const phase13Tests: TestCase[] = [
       let _called = false;
       const unsub = offlineManager.onStatusChange(() => { _called = true; });
       assert(typeof unsub === 'function', 'Should return unsubscribe function');
+      void _called;
       unsub();
       return { id: 'TC-P13-018', passed: true, duration: performance.now() - start, details: 'listener managed' };
     },
@@ -9208,7 +9210,7 @@ if (typeof globalThis !== 'undefined') {
 }
 
 /** Exported utilities for external consumption */
-export { withTimeout, DEFAULT_TEST_TIMEOUT };
+export { DEFAULT_TEST_TIMEOUT, withTimeout };
 
 /** Quick summary for console */
 export function getTestCoverage(): Record<string, number> {

@@ -219,7 +219,7 @@ class CoinGeckoServiceImpl {
   }
 
   private generateSimulated(): NormalizedAsset[] {
-    return SIMULATED_COINS.map((coin, i) => {
+    return SIMULATED_COINS.map((coin) => {
       const change = +(((Math.random() - 0.45) * 10).toFixed(2));
       const vol = coin.mcap * (0.02 + Math.random() * 0.08);
       return {

@@ -12,8 +12,8 @@
  * @depends react,recharts,@/app/components,@/app/contexts,@/app/services
  */
 
-import React, { useState, useCallback } from 'react';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine, ComposedChart, Scatter, LineChart, Line } from 'recharts';
+import React, { useCallback, useState } from 'react';
+import { Area, AreaChart, CartesianGrid, ComposedChart, Line, LineChart, ReferenceLine, ResponsiveContainer, Scatter, Tooltip, XAxis, YAxis } from 'recharts';
 import { toast } from 'sonner';
 
 import { VisualBuilder } from './VisualBuilder';
@@ -21,12 +21,11 @@ import { VisualBuilder } from './VisualBuilder';
 import { serviceBridge } from '@/app/api/service-bridge';
 import { Card } from '@/app/components/ui/card';
 import { STORAGE_KEYS } from '@/app/constants/storage-keys';
-import { getSymbols, getDefaultSymbol } from '@/app/constants/symbols';
-import { getRechartsTooltipStyle, getRechartsAxisStyle, getRechartsGridStyle, COMPARISON_COLORS } from '@/app/constants/theme-colors';
+import { COMPARISON_COLORS, getRechartsAxisStyle, getRechartsGridStyle, getRechartsTooltipStyle, getThemeColors } from '@/app/constants/theme-colors';
 import { useGlobalData } from '@/app/contexts/GlobalDataContext';
 import { getAnalytics } from '@/app/services/AnalyticsService';
-import { runBacktestOffThread, type WorkerBacktestFullResult } from '@/app/services/backtest-worker-bridge';
-import { STRATEGY_TYPES, type BacktestResult, type BacktestConfig } from '@/app/services/BacktestEngine';
+import { runBacktestOffThread } from '@/app/services/backtest-worker-bridge';
+import { STRATEGY_TYPES, type BacktestConfig, type BacktestResult } from '@/app/services/BacktestEngine';
 
 
 type IconProps = React.SVGProps<SVGSVGElement>;
@@ -56,25 +55,25 @@ from strategy_engine import Strategy, Signal
 
 class MACrossStrategy(Strategy):
     """基于快慢均线交叉的趋势跟踪策略"""
-    
+
     def __init__(self):
         self.fast_period = 10   # 快线周期
         self.slow_period = 30   # 慢线周期
         self.stop_loss = 0.02   # 止损比例 2%
         self.take_profit = 0.05 # 止盈比例 5%
-    
+
     def on_bar(self, bar):
         fast_ma = self.sma(bar.close, self.fast_period)
         slow_ma = self.sma(bar.close, self.slow_period)
-        
+
         # 金叉买入信号
         if fast_ma > slow_ma and self.prev_fast <= self.prev_slow:
             self.buy(price=bar.close, quantity=self.calc_position())
-            
+
         # 死叉卖出信号
         elif fast_ma < slow_ma and self.prev_fast >= self.prev_slow:
             self.sell(price=bar.close, quantity=self.position)
-            
+
         self.prev_fast = fast_ma
         self.prev_slow = slow_ma`;
 
@@ -93,8 +92,8 @@ const TEMPLATES = [
 const StrategyEditor = ({ activeTertiary }: { activeTertiary: string }) => {
   const [mode, setMode] = useState<'code' | 'visual'>('code');
   const [templateSearch, setTemplateSearch] = useState('');
-  const [stratParams, setStratParams] = useState({ fastPeriod: 10, slowPeriod: 30, stopLoss: 2, takeProfit: 5 });
-  
+  const [stratParams, _setStratParams] = useState({ fastPeriod: 10, slowPeriod: 30, stopLoss: 2, takeProfit: 5 });
+
   if (activeTertiary === '模板工具') {
     const filteredTemplates = TEMPLATES.filter(t =>
       t.name.toLowerCase().includes(templateSearch.toLowerCase()) ||
@@ -206,8 +205,8 @@ const StrategyEditor = ({ activeTertiary }: { activeTertiary: string }) => {
                   <span className="w-8 text-right text-[#233554] mr-4 select-none shrink-0">{i + 1}</span>
                   <span className={
                     line.startsWith('#') || line.startsWith('    #') ? 'text-[#8892B0]' :
-                    line.includes('def ') || line.includes('class ') || line.includes('import ') || line.includes('from ') ? 'text-[#4299E1]' :
-                    line.includes('self.') ? 'text-[#38B2AC]' : ''
+                      line.includes('def ') || line.includes('class ') || line.includes('import ') || line.includes('from ') ? 'text-[#4299E1]' :
+                        line.includes('self.') ? 'text-[#38B2AC]' : ''
                   }>{line || '\u00A0'}</span>
                 </div>
               ))}
@@ -281,7 +280,7 @@ const SellMarker = (props: { cx?: number; cy?: number }) => {
 // ══════════════════════════════════════
 // Backtest Sub-module (Real Engine + Charts + Trade Markers + Multi-Comparison)
 // ══════════════════════════════════════
-const BacktestModule = ({ activeTertiary }: { activeTertiary: string }) => {
+const BacktestModule = ({ activeTertiary: _activeTertiary }: { activeTertiary: string }) => {
   const [running, setRunning] = useState(false);
   const [result, setResult] = useState<BacktestResult | null>(null);
   const [comparison, setComparison] = useState<ComparisonEntry[]>([]);
@@ -576,12 +575,11 @@ const BacktestModule = ({ activeTertiary }: { activeTertiary: string }) => {
                         {t.pnlPercent >= 0 ? '+' : ''}{t.pnlPercent.toFixed(2)}%
                       </td>
                       <td className="py-1.5 px-2">
-                        <span className={`px-1.5 py-0.5 rounded text-[9px] ${
-                          t.reason === 'stop_loss' ? 'bg-[#F56565]/20 text-[#F56565]' :
+                        <span className={`px-1.5 py-0.5 rounded text-[9px] ${t.reason === 'stop_loss' ? 'bg-[#F56565]/20 text-[#F56565]' :
                           t.reason === 'take_profit' ? 'bg-[#38B2AC]/20 text-[#38B2AC]' :
-                          t.reason === 'signal' ? 'bg-[#4299E1]/20 text-[#4299E1]' :
-                          'bg-[#8892B0]/20 text-[#8892B0]'
-                        }`}>
+                            t.reason === 'signal' ? 'bg-[#4299E1]/20 text-[#4299E1]' :
+                              'bg-[#8892B0]/20 text-[#8892B0]'
+                          }`}>
                           {t.reason === 'stop_loss' ? '止损' : t.reason === 'take_profit' ? '止盈' : t.reason === 'signal' ? '信号' : '结束'}
                         </span>
                       </td>

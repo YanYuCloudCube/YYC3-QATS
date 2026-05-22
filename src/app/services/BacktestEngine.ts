@@ -20,7 +20,7 @@
 // Outputs: equity curve, trade log, comprehensive stats
 // ================================================================
 
-import { getKLineService, type CandleData, type KLineInterval } from './BinanceKLineService';
+import { getKLineService, type KLineInterval } from './BinanceKLineService';
 
 // ── Types ──
 

@@ -157,7 +157,9 @@ interface ExchangeAdapter {
 // ── Binance Adapter (Real structure, simulated data in sandbox) ──
 class BinanceAdapter implements ExchangeAdapter {
   name = 'Binance';
+  // @ts-expect-error reserved for real API integration
   private baseUrl = 'https://api.binance.com';
+  // @ts-expect-error reserved for real API integration
   private wsUrl = 'wss://stream.binance.com:9443';
   private apiKey: string;
   private latencyMs = 0;
@@ -180,8 +182,8 @@ class BinanceAdapter implements ExchangeAdapter {
     }
   }
 
-  async getQuote(symbol: string, midPrice: number): Promise<ExchangeQuote> {
-    // Real: GET /api/v3/ticker/bookTicker?symbol=${symbol.replace('/', '')}
+  async getQuote(_symbol: string, midPrice: number): Promise<ExchangeQuote> {
+    // Real: GET /api/v3/ticker/bookTicker?symbol=${_symbol.replace('/', '')}
     // Sandbox: simulated
     const spread = midPrice * (0.0001 + Math.random() * 0.0002);
     this.latencyMs = Math.round(8 + Math.random() * 6);
@@ -229,7 +231,9 @@ class BinanceAdapter implements ExchangeAdapter {
 // ── OKX Adapter (Real endpoint structure) ──
 class OKXAdapter implements ExchangeAdapter {
   name = 'OKX';
+  // @ts-expect-error reserved for real API integration
   private baseUrl = 'https://www.okx.com';
+  // @ts-expect-error reserved for real API integration
   private wsUrl = 'wss://ws.okx.com:8443/ws/v5';
   private apiKey: string;
   private passphrase: string;
@@ -252,8 +256,8 @@ class OKXAdapter implements ExchangeAdapter {
     }
   }
 
-  async getQuote(symbol: string, midPrice: number): Promise<ExchangeQuote> {
-    // Real: GET /api/v5/market/ticker?instId=${symbol.replace('/', '-')}
+  async getQuote(_symbol: string, midPrice: number): Promise<ExchangeQuote> {
+    // Real: GET /api/v5/market/ticker?instId=${_symbol.replace('/', '-')}
     const spread = midPrice * (0.00015 + Math.random() * 0.00015);
     const offset = midPrice * 0.00005;
     this.latencyMs = Math.round(15 + Math.random() * 10);
@@ -298,7 +302,9 @@ class OKXAdapter implements ExchangeAdapter {
 // ── Bybit Adapter (Real endpoint structure) ──
 class BybitAdapter implements ExchangeAdapter {
   name = 'Bybit';
+  // @ts-expect-error reserved for real API integration
   private baseUrl = 'https://api.bybit.com';
+  // @ts-expect-error reserved for real API integration
   private wsUrl = 'wss://stream.bybit.com/v5';
   private apiKey: string;
   private latencyMs = 0;
@@ -319,8 +325,8 @@ class BybitAdapter implements ExchangeAdapter {
     }
   }
 
-  async getQuote(symbol: string, midPrice: number): Promise<ExchangeQuote> {
-    // Real: GET /v5/market/tickers?category=spot&symbol=${symbol.replace('/', '')}
+  async getQuote(_symbol: string, midPrice: number): Promise<ExchangeQuote> {
+    // Real: GET /v5/market/tickers?category=spot&symbol=${_symbol.replace('/', '')}
     const spread = midPrice * (0.00012 + Math.random() * 0.00018);
     const offset = midPrice * -0.00003;
     this.latencyMs = Math.round(12 + Math.random() * 8);
@@ -379,7 +385,7 @@ export function getAggregatedQuote(symbol: string, midPrice: number): Aggregated
     const spread = midPrice * (0.0001 + Math.random() * 0.0002);
     const cfg = adapter.name === 'Binance' ? { offset: 0, fee: 0.001, lat: [8, 6] }
       : adapter.name === 'OKX' ? { offset: 0.00005, fee: 0.0008, lat: [15, 10] }
-      : { offset: -0.00003, fee: 0.001, lat: [12, 8] };
+        : { offset: -0.00003, fee: 0.001, lat: [12, 8] };
     const isOnline = Math.random() < 0.96;
     return {
       exchange: adapter.name,
@@ -1008,7 +1014,7 @@ export function getExchangeStatuses(): Array<{ name: string; status: 'online' | 
 
 // ── Smart Order Router ──
 export function routeOrder(
-  symbol: string,
+  _symbol: string,
   side: 'BUY' | 'SELL',
   quantity: number,
   exchanges: ExchangeQuote[],
