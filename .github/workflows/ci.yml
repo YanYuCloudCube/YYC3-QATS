@@ -1,4 +1,4 @@
-name: YYC3-QATS CI
+name: YYC3-QATS CI/CD
 
 on:
   push:
@@ -9,6 +9,11 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   quality:
@@ -40,5 +45,22 @@ jobs:
       - name: Unit Tests
         run: pnpm run test
 
-      - name: Build Verification
+      - name: Build
         run: pnpm run build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: quality
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: https://trading.yyc3.vip
+    steps:
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4

@@ -12,15 +12,20 @@
  * @depends vite,@vitejs/plugin-react,@tailwindcss/vite
  */
 
-import { defineConfig } from 'vite'
-import path from 'path'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
+import path from 'path'
+import { defineConfig } from 'vite'
 
 export default defineConfig({
+  base: '/',
   server: {
     port: 3188,
     strictPort: true,
+  },
+  build: {
+    outDir: 'dist',
+    sourcemap: false,
   },
   plugins: [
     // The React and Tailwind plugins are both required for Make, even if
