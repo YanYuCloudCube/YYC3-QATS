@@ -18,32 +18,27 @@ import ReactDOM from 'react-dom/client';
 import App from '@/app/App';
 import '@/styles/index.css';
 
-// Suppress fginspector ForwardRef errors
-const originalConsoleError = console.error;
-console.error = (...args) => {
-  const errorMessage = args[0];
-  if (
-    typeof errorMessage === 'string' &&
-    (errorMessage.includes('forwardRef') ||
-     errorMessage.includes('ForwardRef') ||
-     errorMessage.includes('fginspector') ||
-     errorMessage.includes('React.Fragment') ||
-     errorMessage.includes('Warning:'))
-  ) {
-    return;
-  }
-  originalConsoleError.apply(console, args);
-};
+if (import.meta.env.DEV) {
+  const _origConsoleError = console.error;
+  console.error = (...args: unknown[]) => {
+    if (
+      typeof args[0] === 'string' &&
+      args[0].includes('fginspector')
+    ) {
+      return;
+    }
+    _origConsoleError.apply(console, args);
+  };
+}
 
-// Register Service Worker
-if ('serviceWorker' in navigator) {
+if ('serviceWorker' in navigator && import.meta.env.PROD) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
       .then((registration) => {
-        console.log('Service Worker registered:', registration.scope);
+        console.log('[YYC-PWA] Service Worker registered:', registration.scope);
       })
       .catch((error) => {
-        console.log('Service Worker registration failed:', error);
+        console.log('[YYC-PWA] Service Worker registration failed:', error);
       });
   });
 }

@@ -24,8 +24,6 @@ import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 
 import { Card } from '@/app/components/ui/card';
-
-// Constants
 import { getAllEvents } from '@/app/constants/events';
 import { getAllGlobalKeys } from '@/app/constants/global-keys';
 import { runtimeConfig, MAGIC_NUMBERS, getMagicNumber, type MagicNumber } from '@/app/constants/runtime-config';

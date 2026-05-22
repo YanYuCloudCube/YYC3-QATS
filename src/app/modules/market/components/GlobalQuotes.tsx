@@ -12,10 +12,10 @@
  * @depends @/app/components,@/app/contexts,@/app/services,@/app/utils
  */
 
-import React, { useState, useMemo, useCallback, useRef } from 'react';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 
-import { Star, TrendingUp, TrendingDown, ArrowRight, Activity, Plus, ShieldAlert, BellRing } from '@/app/components/SafeIcons';
+import { Activity, ArrowRight, BellRing, Plus, ShieldAlert, Star, TrendingDown, TrendingUp } from '@/app/components/SafeIcons';
 import { Card } from '@/app/components/ui/card';
 import { useAlerts } from '@/app/contexts/AlertContext';
 import { useGlobalData } from '@/app/contexts/GlobalDataContext';
@@ -151,7 +151,7 @@ export const GlobalQuotes = () => {
 
   const btc = marketData.find(a => a.symbol === 'BTC/USDT');
   const summaryCards = [
-    { name: '总资产', id: 'account', price: `$${account.totalAssets.toLocaleString(undefined, {minimumFractionDigits: 0, maximumFractionDigits: 0})}`, change: account.todayPnlPercent, link: () => navigateTo('trade', 'real', '资产监控') },
+    { name: '总资产', id: 'account', price: `$${account.totalAssets.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`, change: account.todayPnlPercent, link: () => navigateTo('trade', 'real', '资产监控') },
     { name: 'BTC', id: 'BTC', price: btc ? formatPrice(btc.price) : '--', change: btc?.change || 0, link: null },
     { name: '活跃策略', id: 'strategies', price: `${activeStrategies.length}个`, change: activeStrategies.reduce((s, st) => s + parseFloat(st.pnl), 0), link: () => navigateTo('strategy', 'manage') },
     { name: '风险VaR95', id: 'risk', price: `$${Math.abs(riskMetrics.portfolioVaR95).toLocaleString()}`, change: riskMetrics.maxDrawdown, link: () => navigateTo('risk', 'quantum_risk') },
@@ -227,7 +227,7 @@ export const GlobalQuotes = () => {
           </div>
           <div>
             <h4 className="text-xs font-bold text-white">WebSocket 实时推送中</h4>
-            <p className="text-[9px] text-[#8892B0] mt-0.5">所有异常波动均已同步至"智能预警中心"</p>
+            <p className="text-[9px] text-[#8892B0] mt-0.5">所有异常波动均已同步至&ldquo;智能预警中心&rdquo;</p>
           </div>
         </Card>
       </div>
@@ -241,11 +241,10 @@ export const GlobalQuotes = () => {
               <button
                 key={tab.id}
                 onClick={() => handleTabChange(tab.id)}
-                className={`px-3 lg:px-4 py-2 rounded-t-sm text-sm font-bold transition-all relative ${
-                  activeTab === tab.id
+                className={`px-3 lg:px-4 py-2 rounded-t-sm text-sm font-bold transition-all relative ${activeTab === tab.id
                     ? 'text-[#38B2AC] bg-[#112240]'
                     : 'text-[#8892B0] hover:text-[#CCD6F6] hover:bg-[#112240]/50'
-                }`}
+                  }`}
               >
                 {tab.label}
                 {activeTab === tab.id && (
@@ -259,9 +258,8 @@ export const GlobalQuotes = () => {
             {/* Favorites toggle */}
             <button
               onClick={() => { setShowFavOnly(f => !f); }}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded transition-colors ${
-                showFavOnly ? 'bg-[#ECC94B]/20 text-[#ECC94B] border border-[#ECC94B]/40' : 'text-[#8892B0] hover:text-[#CCD6F6] border border-[#233554]'
-              }`}
+              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs rounded transition-colors ${showFavOnly ? 'bg-[#ECC94B]/20 text-[#ECC94B] border border-[#ECC94B]/40' : 'text-[#8892B0] hover:text-[#CCD6F6] border border-[#233554]'
+                }`}
             >
               <Star className="w-3 h-3" fill={showFavOnly ? 'currentColor' : 'none'} />
               收藏 ({favorites.size})
@@ -283,15 +281,13 @@ export const GlobalQuotes = () => {
             <div className="flex items-center gap-2 text-[10px] text-[#8892B0]">
               <span>{processedData.length} 条</span>
               <span className="w-px h-3 bg-[#233554]" />
-              <span className={`w-2 h-2 rounded-full animate-pulse ${
-                effectiveDataSource === 'YYC WS' ? 'bg-[#4299E1]' :
-                effectiveDataSource === 'Binance' ? 'bg-[#38B2AC]' : 'bg-[#ECC94B]'
-              }`} />
-              <span className={`px-1.5 py-0.5 rounded text-[9px] font-mono ${
-                effectiveDataSource === 'YYC WS' ? 'bg-[#4299E1]/15 text-[#4299E1]' :
-                effectiveDataSource === 'Binance' ? 'bg-[#38B2AC]/15 text-[#38B2AC]' :
-                'bg-[#ECC94B]/15 text-[#ECC94B]'
-              }`}>{effectiveDataSource}</span>
+              <span className={`w-2 h-2 rounded-full animate-pulse ${effectiveDataSource === 'YYC WS' ? 'bg-[#4299E1]' :
+                  effectiveDataSource === 'Binance' ? 'bg-[#38B2AC]' : 'bg-[#ECC94B]'
+                }`} />
+              <span className={`px-1.5 py-0.5 rounded text-[9px] font-mono ${effectiveDataSource === 'YYC WS' ? 'bg-[#4299E1]/15 text-[#4299E1]' :
+                  effectiveDataSource === 'Binance' ? 'bg-[#38B2AC]/15 text-[#38B2AC]' :
+                    'bg-[#ECC94B]/15 text-[#ECC94B]'
+                }`}>{effectiveDataSource}</span>
               {t('market.realtime')}
             </div>
           </div>
@@ -384,7 +380,7 @@ export const GlobalQuotes = () => {
               {searchQuery ? (
                 <div className="text-center">
                   <SearchIcon className="w-8 h-8 mx-auto mb-2 opacity-30" />
-                  <p className="text-sm">未找到匹配 "{searchQuery}" 的结果</p>
+                  <p className="text-sm">未找到匹配 &ldquo;{searchQuery}&rdquo; 的结果</p>
                   <button onClick={() => setSearchQuery('')} className="text-xs text-[#4299E1] mt-2 hover:underline">清除搜索</button>
                 </div>
               ) : showFavOnly ? (

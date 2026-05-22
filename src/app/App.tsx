@@ -12,12 +12,8 @@
  * @depends react,sonner,@/app/components,@/app/contexts,@/app/services
  */
 
-import React, { useState, useEffect } from 'react';
-
-// Use safe icon wrappers instead of lucide-react to avoid fginspector ForwardRef errors
-// import { Zap, Settings, Star, Activity, ChevronRight, Menu } from './components/SafeIcons';
-
-// Inline icons to avoid potential import issues
+import React, { useEffect, useState } from 'react';
+import { toast, Toaster } from 'sonner';
 type IconProps = React.SVGProps<SVGSVGElement>;
 
 const Star = (props: IconProps) => <svg {...props} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>;
@@ -32,7 +28,6 @@ const Layers = ({ className = "w-4 h-4", ...props }: IconProps) => (
   </svg>
 );
 
-import { Toaster, toast } from 'sonner';
 import logoImg from "/yyc3-logo-blue.png";
 
 import { AITraderAssistant } from '@/app/components/AITraderAssistant';
@@ -43,29 +38,30 @@ import { DataAlertBridge } from '@/app/components/DataAlertBridge';
 import { ErrorBoundary } from '@/app/components/ErrorBoundary';
 import { ExportPanel } from '@/app/components/ExportPanel';
 import { FeasibilityReport } from '@/app/components/FeasibilityReport';
-import { MobileTabbar, MobileDrawer } from '@/app/components/layout/MobileNavigation';
+import { MobileDrawer, MobileTabbar } from '@/app/components/layout/MobileNavigation';
 import { Navbar } from '@/app/components/layout/Navbar';
 import { SettingsDialog } from '@/app/components/layout/SettingsDialog';
 import { Sidebar } from '@/app/components/layout/Sidebar';
-import { NotificationCenter, NotificationBadge, initNotificationBridge } from '@/app/components/NotificationCenter';
+import { initNotificationBridge, NotificationBadge, NotificationCenter } from '@/app/components/NotificationCenter';
 import { OfflineIndicator } from '@/app/components/OfflineIndicator';
 import { useIsMobile } from '@/app/components/ui/use-mobile';
 import { AlertProvider } from '@/app/contexts/AlertContext';
 import { GlobalDataProvider, useGlobalData } from '@/app/contexts/GlobalDataContext';
 import { SettingsProvider, useSettings } from '@/app/contexts/SettingsContext';
-import { MODULES, MENUS } from '@/app/data/navigation';
+import { MENUS, MODULES } from '@/app/data/navigation';
 import { useTranslation } from '@/app/i18n/mock';
-import { AdminModule } from '@/app/modules/admin/AdminModule';
-import { BigDataModule } from '@/app/modules/bigdata/BigDataModule';
-import { MarketModule } from '@/app/modules/market/MarketModule';
-import { ModelModule } from '@/app/modules/model/ModelModule';
-import { QuantumModule } from '@/app/modules/quantum/QuantumModule';
-import { RiskModule } from '@/app/modules/risk/RiskModule';
-import { StrategyModule } from '@/app/modules/strategy/StrategyModule';
-import { TradeModule } from '@/app/modules/trade/TradeModule';
 import { getAnalytics } from '@/app/services/AnalyticsService';
 import '@/app/utils/data-export';
 import { preferenceManager } from '@/app/utils/user-preferences';
+
+const AdminModule = React.lazy(() => import('@/app/modules/admin/AdminModule').then(m => ({ default: m.AdminModule })));
+const BigDataModule = React.lazy(() => import('@/app/modules/bigdata/BigDataModule').then(m => ({ default: m.BigDataModule })));
+const MarketModule = React.lazy(() => import('@/app/modules/market/MarketModule').then(m => ({ default: m.MarketModule })));
+const ModelModule = React.lazy(() => import('@/app/modules/model/ModelModule').then(m => ({ default: m.ModelModule })));
+const QuantumModule = React.lazy(() => import('@/app/modules/quantum/QuantumModule').then(m => ({ default: m.QuantumModule })));
+const RiskModule = React.lazy(() => import('@/app/modules/risk/RiskModule').then(m => ({ default: m.RiskModule })));
+const StrategyModule = React.lazy(() => import('@/app/modules/strategy/StrategyModule').then(m => ({ default: m.StrategyModule })));
+const TradeModule = React.lazy(() => import('@/app/modules/trade/TradeModule').then(m => ({ default: m.TradeModule })));
 
 function AppContent() {
   const [activeModule, setActiveModule] = useState('market');
@@ -109,22 +105,6 @@ function AppContent() {
   }, []);
 
   useEffect(() => {
-    // Suppress fginspector ForwardRef errors globally
-    const originalConsoleError = console.error;
-    console.error = (...args) => {
-      const errorString = args.join(' ');
-      if (errorString.includes('fginspector') || 
-          errorString.includes('ForwardRef') ||
-          errorString.includes('Element type is invalid') ||
-          errorString.includes('React.Fragment')) {
-        // Log quietly without throwing
-        console.warn('Suppressed external inspector error:', ...args);
-        return;
-      }
-      originalConsoleError.apply(console, args);
-    };
-
-    // Set Title and Favicon
     document.title = "言语云量化分析交易系统";
     const link = (document.querySelector("link[rel*='icon']") || document.createElement('link')) as HTMLLinkElement;
     link.type = 'image/png';
@@ -132,22 +112,7 @@ function AppContent() {
     link.href = logoImg;
     document.getElementsByTagName('head')[0].appendChild(link);
 
-    // PWA: Inject meta tags only (no blob URL manifest, no service worker)
-    // Service Worker registration has been removed because it intercepts
-    // Vite's native ESM module fetches in dev mode, causing
-    // "Failed to fetch dynamically imported module" errors.
     injectPWAMeta();
-
-    // Unregister any previously cached Service Worker to prevent stale
-    // module cache from interfering with Vite dev server
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.getRegistrations().then(registrations => {
-        for (const registration of registrations) {
-          registration.unregister();
-          console.log('[YYC-PWA] Unregistered stale Service Worker:', registration.scope);
-        }
-      });
-    }
 
     const handleToggleDrawer = () => setIsMobileDrawerOpen(prev => !prev);
     const handleShowReport = () => setIsReportOpen(true);
@@ -245,7 +210,7 @@ function AppContent() {
 
   const getBreadcrumbs = () => {
     const subInfo = MENUS[activeModule]?.find(s => s.id === activeSub);
-    
+
     return (
       <div className="flex items-center gap-2 text-xs lg:text-sm overflow-hidden">
         <span className="text-[#8892B0] whitespace-nowrap hidden sm:inline">言语云系统</span>
@@ -271,65 +236,71 @@ function AppContent() {
     );
   };
 
+  const LM = ({ children }: { children: React.ReactNode }) => (
+    <React.Suspense fallback={<div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#4299E1]" /><span className="ml-3 text-[#8892B0]">加载中...</span></div>}>
+      {children}
+    </React.Suspense>
+  );
+
   const renderContent = () => {
     switch (activeModule) {
       case 'market':
         return (
           <div className="space-y-0">
             <CrossModuleBar currentModule="market" />
-            <MarketModule 
-              activeSub={activeSub} 
+            <LM><MarketModule
+              activeSub={activeSub}
               activeTertiary={activeTertiary}
-            />
+            /></LM>
           </div>
         );
       case 'strategy':
         return (
           <div className="space-y-0">
             <CrossModuleBar currentModule="strategy" />
-            <StrategyModule activeSub={activeSub} activeTertiary={activeTertiary} />
+            <LM><StrategyModule activeSub={activeSub} activeTertiary={activeTertiary} /></LM>
           </div>
         );
       case 'risk':
         return (
           <div className="space-y-0">
             <CrossModuleBar currentModule="risk" />
-            <RiskModule activeSub={activeSub} />
+            <LM><RiskModule activeSub={activeSub} /></LM>
           </div>
         );
       case 'quantum':
         return (
           <div className="space-y-0">
             <CrossModuleBar currentModule="quantum" />
-            <QuantumModule activeSub={activeSub} />
+            <LM><QuantumModule activeSub={activeSub} /></LM>
           </div>
         );
       case 'bigdata':
         return (
           <div className="space-y-0">
             <CrossModuleBar currentModule="bigdata" />
-            <BigDataModule activeSub={activeSub} />
+            <LM><BigDataModule activeSub={activeSub} /></LM>
           </div>
         );
       case 'model':
         return (
           <div className="space-y-0">
             <CrossModuleBar currentModule="model" />
-            <ModelModule activeSub={activeSub} />
+            <LM><ModelModule activeSub={activeSub} /></LM>
           </div>
         );
       case 'trade':
         return (
           <div className="space-y-0">
             <CrossModuleBar currentModule="trade" />
-            <TradeModule activeSub={activeSub} activeTertiary={activeTertiary} />
+            <LM><TradeModule activeSub={activeSub} activeTertiary={activeTertiary} /></LM>
           </div>
         );
       case 'admin':
         return (
           <div className="space-y-0">
             <CrossModuleBar currentModule="admin" />
-            <AdminModule activeSub={activeSub} activeTertiary={activeTertiary} />
+            <LM><AdminModule activeSub={activeSub} activeTertiary={activeTertiary} /></LM>
           </div>
         );
       default:
@@ -352,10 +323,10 @@ function AppContent() {
       <DataAlertBridge />
 
       <Navbar activeModule={activeModule} setActiveModule={handleModuleChange} />
-      
+
       {/* Ticker Bar */}
       <div className={`fixed top-16 ${isMobile ? 'left-0' : 'left-64'} right-0 h-8 bg-[#112240]/80 backdrop-blur-md border-b border-[#233554] z-30 flex items-center px-4 lg:px-6 overflow-hidden`}>
-        <div 
+        <div
           className="flex items-center gap-12 whitespace-nowrap animate-[ticker_30s_linear_infinite]"
           style={{ animation: 'ticker 30s linear infinite' }}
         >
@@ -373,17 +344,17 @@ function AppContent() {
       <div className={`${isMobile ? 'pt-20' : 'pt-24'} flex flex-1`}>
         {/* Desktop Sidebar */}
         {!isMobile && (
-        <div className="hidden lg:block">
-          <Sidebar 
-            module={activeModule} 
-            activeSub={activeSub} 
-            setActiveSub={handleSubChange}
-            activeTertiary={activeTertiary}
-            setActiveTertiary={setActiveTertiary}
-          />
-        </div>
+          <div className="hidden lg:block">
+            <Sidebar
+              module={activeModule}
+              activeSub={activeSub}
+              setActiveSub={handleSubChange}
+              activeTertiary={activeTertiary}
+              setActiveTertiary={setActiveTertiary}
+            />
+          </div>
         )}
-        
+
         {/* Main Content Area */}
         <main className={`flex-1 ${isMobile ? '' : 'lg:ml-64'} ${isMobile ? 'p-3' : 'p-4 lg:p-6'} overflow-x-hidden min-h-[calc(100vh-96px)] ${isMobile ? 'pb-28' : 'pb-24 lg:pb-6'}`}>
           <div
@@ -395,11 +366,11 @@ function AppContent() {
               <div>
                 {getBreadcrumbs()}
                 <h1 className={`text-[#FFFFFF] ${isMobile ? 'text-lg' : 'text-xl lg:text-2xl'} font-bold tracking-tight mt-2 flex items-center gap-2`}>
-                   {t(`nav.${activeModule}`)}
-                   <span className="text-[#233554]">|</span>
-                   <span className="text-base lg:text-lg font-normal text-[#CCD6F6]">
-                     {MENUS[activeModule]?.find(s => s.id === activeSub)?.name || '概览'}
-                   </span>
+                  {t(`nav.${activeModule}`)}
+                  <span className="text-[#233554]">|</span>
+                  <span className="text-base lg:text-lg font-normal text-[#CCD6F6]">
+                    {MENUS[activeModule]?.find(s => s.id === activeSub)?.name || '概览'}
+                  </span>
                 </h1>
               </div>
               <div className={`flex items-center ${isMobile ? 'gap-2' : 'gap-2 lg:gap-3'}`}>
@@ -416,7 +387,7 @@ function AppContent() {
                 >
                   <Star className="w-4 h-4" /> 收藏
                 </button>
-                <button 
+                <button
                   onClick={() => setIsReportOpen(true)}
                   className={`flex-1 md:flex-none flex items-center justify-center gap-2 ${isMobile ? 'px-3 py-1.5' : 'px-3 lg:px-4 py-2'} bg-[#4299E1] rounded-md ${isMobile ? 'text-xs' : 'text-xs lg:text-sm'} text-white font-medium hover:brightness-110 transition-all`}
                 >
@@ -434,9 +405,9 @@ function AppContent() {
       {isMobile && (
         <span className="contents">
           <MobileTabbar activeModule={activeModule} onModuleChange={handleModuleChange} />
-          <MobileDrawer 
-            isOpen={isMobileDrawerOpen} 
-            onClose={() => setIsMobileDrawerOpen(false)} 
+          <MobileDrawer
+            isOpen={isMobileDrawerOpen}
+            onClose={() => setIsMobileDrawerOpen(false)}
             activeModule={activeModule}
             onModuleChange={handleModuleChange}
             activeSub={activeSub}

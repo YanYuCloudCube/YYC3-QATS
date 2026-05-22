@@ -149,7 +149,7 @@ class CoinGeckoServiceImpl {
       this.cache = { data, fetchedAt: Date.now() };
       this.persistToStorage(data);
       return { assets: this.normalize(data), source: 'coingecko' };
-    } catch (err) {
+    } catch (_err) {
       console.debug('[CoinGecko] API unavailable, using fallback data');
       const stored = this.loadFromStorage();
       if (stored.length > 0) {

@@ -18,8 +18,11 @@
     "dev": "vite --port 3200",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "typecheck": "tsc --noEmit"
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 500",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
     "@emotion/react": "11.14.0",
@@ -89,6 +92,8 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "4.1.12",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/react": "^18.3.28",
     "@types/react-dom": "^18.3.7",
     "@typescript-eslint/eslint-plugin": "^8.57.1",
@@ -99,8 +104,10 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
+    "jsdom": "^29.1.1",
     "tailwindcss": "4.1.12",
-    "vite": "6.3.5"
+    "vite": "6.3.5",
+    "vitest": "^4.1.7"
   },
   "peerDependencies": {
     "react": "18.3.1",

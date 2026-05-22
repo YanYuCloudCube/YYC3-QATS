@@ -12,7 +12,7 @@
  * @depends react,recharts,@/app/components,@/app/contexts,@/app/services
  */
 
-import React, { useState, useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { toast } from 'sonner';
 
 import { CustomPanel } from './components/CustomPanel';
@@ -67,14 +67,14 @@ const HistoryModule = () => {
     { date: '2026-02-10', open: '94,600', high: '95,200', low: '93,000', close: '93,800', change: '-0.85%', vol: '35.2B' },
   ];
 
-  const handleQuery = useCallback(() => {
+  const handleQuery = () => {
     setLoading(true);
     toast.info(`正在查询 ${selectedSymbol} ${selectedInterval} 数据...`);
     setTimeout(() => {
       setLoading(false);
       toast.success(`${selectedSymbol} ${selectedInterval} 数据已加载 (${mockData.length} 条记录)`);
     }, 800);
-  }, [selectedSymbol, selectedInterval]);
+  };
 
   const handleExport = useCallback(() => {
     toast.promise(
@@ -270,11 +270,10 @@ const InsightModule = () => {
                   <span className="text-[10px] px-2 py-0.5 bg-[#4299E1]/10 text-[#4299E1] rounded ml-2">{insight.type}</span>
                 </div>
               </div>
-              <span className={`text-[10px] px-2 py-0.5 rounded shrink-0 ml-2 ${
-                insight.severity === 'high' ? 'bg-[#F56565]/20 text-[#F56565]' :
+              <span className={`text-[10px] px-2 py-0.5 rounded shrink-0 ml-2 ${insight.severity === 'high' ? 'bg-[#F56565]/20 text-[#F56565]' :
                 insight.severity === 'medium' ? 'bg-[#ECC94B]/20 text-[#ECC94B]' :
-                'bg-[#38B2AC]/20 text-[#38B2AC]'
-              }`}>{insight.severity}</span>
+                  'bg-[#38B2AC]/20 text-[#38B2AC]'
+                }`}>{insight.severity}</span>
             </div>
           ))}
         </div>
