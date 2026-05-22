@@ -28,7 +28,7 @@ const Layers = ({ className = "w-4 h-4", ...props }: IconProps) => (
   </svg>
 );
 
-import logoImg from "/yyc3-logo-blue.png";
+import logoImg from "/yyc3.png";
 
 import { AITraderAssistant } from '@/app/components/AITraderAssistant';
 import { AuthPanel } from '@/app/components/AuthPanel';

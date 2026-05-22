@@ -20,7 +20,7 @@ import { useAlerts } from '@/app/contexts/AlertContext';
 import { useGlobalData } from '@/app/contexts/GlobalDataContext';
 import { MODULES, MENUS, type MenuItem } from '@/app/data/navigation';
 
-import logoImg from "/yyc3-logo-blue.png";
+import logoImg from "/yyc3.png";
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));

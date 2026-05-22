@@ -26,7 +26,7 @@ import { currentEnv } from '@/app/api/config';
 import { useGlobalData } from '@/app/contexts/GlobalDataContext';
 import { MODULES } from '@/app/data/navigation';
 import { useTranslation } from '@/app/i18n/mock';
-import logoImg from "/yyc3-logo-blue.png";
+import logoImg from "/yyc3.png";
 
 // Inline icons to prevent import issues
 type IconProps = React.SVGProps<SVGSVGElement>;
